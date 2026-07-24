@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1b1410">
+<title>시타델 · 1:1</title>
+<style>
+:root{
+  --bg:#171210; --bg2:#211a16; --panel:#2b2119; --panel2:#352a20;
+  --line:#4a3a2c; --gold:#e8c66a; --gold2:#b8933f;
+  --txt:#efe4d2; --dim:#a9977f; --dim2:#7d6d59;
+  --noble:#d8b23a; --relig:#4a90d9; --trade:#4fae6a; --milit:#cf4b45; --uniq:#a765c8;
+  --ok:#57b46a; --bad:#d05a52;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior:none}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  font-size:14px; line-height:1.45; -webkit-text-size-adjust:100%;
+  user-select:none;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;font-size:14px}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:var(--safe-t);padding-bottom:var(--safe-b)}
+
+/* ============ 공통 ============ */
+.btn{
+  background:linear-gradient(#3f3124,#2d2219); border:1px solid var(--line);
+  border-radius:10px; padding:10px 14px; color:var(--txt); font-weight:600;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  transition:transform .06s, filter .12s;
+}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(#8a6b2d,#6b5122);border-color:var(--gold2);color:#fff4d8}
+.btn.danger{background:linear-gradient(#7a3330,#5c2523);border-color:#8d4540}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--dim)}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:8px}
+.btn.wide{width:100%}
+.row{display:flex;gap:8px}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1}
+.center{text-align:center}
+.muted{color:var(--dim)}
+.tiny{font-size:11.5px}
+.sep{height:1px;background:var(--line);margin:10px 0}
+
+.coin{display:inline-flex;align-items:center;gap:3px;color:var(--gold);font-weight:700}
+.coin::before{content:"";width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6dd9a,#c79a34);box-shadow:0 0 0 1px #8a6a24 inset}
+.cnt{display:inline-flex;align-items:center;gap:3px;font-weight:700}
+.cnt::before{content:"";width:9px;height:12px;border-radius:2px;background:linear-gradient(#6c5a44,#4a3d2e);box-shadow:0 0 0 1px #2018127f inset}
+
+/* ============ 상단바 ============ */
+#topbar{
+  flex:0 0 auto;background:linear-gradient(#241c16,#1c1512);border-bottom:1px solid var(--line);
+  padding:6px 10px; display:flex;align-items:center;gap:8px;
+}
+#topbar .rnd{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.5px}
+#topbar .ttl{font-weight:800;color:var(--gold);letter-spacing:1px}
+.iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--dim)}
+
+/* ============ 본문 ============ */
+#main{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px 4px}
+#main::-webkit-scrollbar{width:0}
+
+.seat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin-bottom:8px}
+.seat.me{border-color:#5d4a33}
+.seat .hd{display:flex;align-items:center;gap:7px;font-size:12.5px}
+.seat .nm{font-weight:800;font-size:13.5px}
+.seat .stats{margin-left:auto;display:flex;gap:9px;align-items:center;font-size:12.5px}
+.crown{color:var(--gold);font-size:14px}
+.chartag{
+  font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;
+  border:1px solid var(--line);background:#3a2d21;color:var(--dim)
+}
+.chartag.act{background:linear-gradient(#8a6b2d,#634c1f);color:#fff2d5;border-color:var(--gold2)}
+.chartag.dead{text-decoration:line-through;opacity:.5}
+
+/* 도시 */
+.city{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:24px}
+.city:empty::after{content:"— 건물 없음 —";color:var(--dim2);font-size:11px}
+.dchip{
+  font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;
+  border:1px solid rgba(255,255,255,.14); color:#fff; display:flex;align-items:center;gap:4px;
+  max-width:100%;
+}
+.dchip .c{opacity:.85;font-weight:800}
+.dchip.sel{outline:2px solid var(--gold);outline-offset:1px}
+.dchip.dis{opacity:.35}
+.t-noble{background:linear-gradient(#9c7d1f,#6f5814)}
+.t-relig{background:linear-gradient(#2a5f96,#1d4369)}
+.t-trade{background:linear-gradient(#2f7a45,#215732)}
+.t-milit{background:linear-gradient(#953230,#6b2422)}
+.t-uniq{background:linear-gradient(#6d3d8c,#4d2a63)}
+
+/* 액션 패널 */
+#panel{
+  flex:0 0 auto;background:linear-gradient(#241c16,#1a1411);
+  border-top:1px solid var(--line);padding:8px 9px 9px;
+}
+#prompt{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px;min-height:19px}
+#prompt .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:0 0 auto;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#acts{display:flex;flex-wrap:wrap;gap:7px}
+
+/* 손패 */
+#handWrap{margin-top:7px}
+#hand{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+#hand::-webkit-scrollbar{height:0}
+
+/* ============ 카드 ============ */
+.card{
+  flex:0 0 auto;width:98px;height:132px;border-radius:9px;position:relative;
+  border:1px solid rgba(0,0,0,.5); padding:6px; display:flex;flex-direction:column;
+  box-shadow:0 2px 6px #0007; overflow:hidden; color:#fff;
+}
+.card .cost{
+  position:absolute;top:5px;left:5px;width:19px;height:19px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f6dd9a,#b78b28);color:#3a2a08;
+  font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px #00000055;
+}
+.card .nm{margin-top:21px;font-size:12.5px;font-weight:800;line-height:1.15;text-shadow:0 1px 2px #0009}
+.card .tp{font-size:9.5px;opacity:.75;margin-top:2px;font-weight:700;letter-spacing:.5px}
+.card .tx{
+  margin-top:auto;font-size:9px;line-height:1.25;background:#00000055;border-radius:5px;
+  padding:3px 4px;max-height:62px;overflow:hidden;font-weight:500;
+}
+.card.sel{outline:2.5px solid var(--gold);outline-offset:1px;transform:translateY(-4px)}
+.card.dis{filter:grayscale(.7) brightness(.55)}
+.card.mini{width:78px;height:104px}
+.card.mini .nm{font-size:11px;margin-top:19px}
+.card.mini .tx{font-size:8px;max-height:42px}
+.card .badge{position:absolute;top:5px;right:5px;font-size:9px;font-weight:800;background:#0009;border-radius:5px;padding:2px 4px}
+
+/* 캐릭터 카드 */
+.chcard{
+  flex:0 0 auto;width:104px;border-radius:10px;padding:7px;position:relative;
+  background:linear-gradient(#3b2f24,#2a2119);border:1px solid var(--line);
+  display:flex;flex-direction:column;gap:4px;
+}
+.chcard .rk{
+  width:22px;height:22px;border-radius:50%;background:linear-gradient(#f0d79b,#c19a45);
+  color:#3a2a08;font-weight:900;font-size:12.5px;display:flex;align-items:center;justify-content:center;
+}
+.chcard .nm{font-weight:800;font-size:13px}
+.chcard .ab{font-size:9.5px;line-height:1.3;color:#dfd2bd}
+.chcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px #e8c66a55;transform:translateY(-3px)}
+.chcard.dis{opacity:.4}
+.chcard .hd{display:flex;align-items:center;gap:6px}
+
+/* ============ 모달 ============ */
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:50;backdrop-filter:blur(2px)}
+#modal.on{display:flex}
+#msheet{
+  width:100%;max-height:92%;background:linear-gradient(#2a211a,#1e1814);
+  border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+  padding:12px 12px calc(12px + var(--safe-b));display:flex;flex-direction:column;gap:9px;
+  animation:up .18s ease-out;
+}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+#mtitle{font-weight:800;font-size:15px;color:var(--gold)}
+#mbody{overflow-y:auto;-webkit-overflow-scrolling:touch}
+#mbody::-webkit-scrollbar{width:0}
+.hrow{display:flex;gap:7px;overflow-x:auto;padding:3px 0 7px}
+.hrow::-webkit-scrollbar{height:0}
+.optlist{display:flex;flex-direction:column;gap:6px}
+.opt{
+  display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;
+  border:1px solid var(--line);background:#2f251c;font-size:13px;text-align:left;
+}
+.opt:active{background:#3b2e22}
+.opt .sub{margin-left:auto;font-size:11.5px;color:var(--dim)}
+.opt.sel{border-color:var(--gold);background:#3d2f1e}
+.opt.dis{opacity:.35;pointer-events:none}
+
+/* ============ 로그 ============ */
+#logwrap{position:fixed;inset:0;background:#000c;display:none;z-index:60;flex-direction:column}
+#logwrap.on{display:flex}
+#logbox{flex:1;overflow-y:auto;padding:12px;padding-top:calc(12px + var(--safe-t));font-size:12.5px;line-height:1.6}
+#logbox .le{padding:3px 0;border-bottom:1px solid #ffffff0d}
+#logbox .le b{color:var(--gold)}
+#logbox .rh{color:var(--gold);font-weight:800;margin-top:10px;font-size:13px}
+
+/* ============ 시작 화면 ============ */
+#start{position:fixed;inset:0;z-index:70;background:radial-gradient(ellipse at 50% 0%,#312418,#140f0c 70%);
+  overflow-y:auto;padding:calc(20px + var(--safe-t)) 16px calc(20px + var(--safe-b));display:flex;flex-direction:column;gap:14px}
+#start.off{display:none}
+#start h1{font-size:30px;margin:6px 0 0;color:var(--gold);letter-spacing:5px;text-align:center;font-weight:900;text-shadow:0 2px 12px #00000099}
+#start .sub{text-align:center;color:var(--dim);font-size:12px;letter-spacing:2px;margin-bottom:4px}
+.sect{background:#00000038;border:1px solid var(--line);border-radius:14px;padding:11px}
+.sect h3{margin:0 0 8px;font-size:13px;color:var(--gold);letter-spacing:1px}
+.diffs{display:flex;flex-direction:column;gap:7px}
+.diff{display:flex;align-items:center;gap:10px;padding:10px;border-radius:11px;border:1px solid var(--line);background:#2a2119;text-align:left}
+.diff.sel{border-color:var(--gold);background:#3b2d1c;box-shadow:0 0 0 2px #e8c66a33}
+.diff .em{font-size:22px;width:28px;text-align:center}
+.diff .t{font-weight:800;font-size:14px}
+.diff .d{font-size:11px;color:var(--dim);line-height:1.35}
+.rankrow{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.rankrow .rn{width:20px;height:20px;border-radius:50%;background:#4a3a2c;color:var(--gold);font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.vsel{display:flex;gap:4px;flex:1}
+.vopt{flex:1;padding:6px 3px;border-radius:8px;border:1px solid var(--line);background:#2a2119;font-size:11.5px;font-weight:700;text-align:center;color:var(--dim)}
+.vopt.sel{background:linear-gradient(#8a6b2d,#634c1f);color:#fff2d5;border-color:var(--gold2)}
+.vopt.dis{opacity:.3;pointer-events:none}
+
+/* 결과 */
+.scorerow{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;border-bottom:1px solid #ffffff10}
+.scorerow .v{margin-left:auto;font-weight:800;color:var(--gold)}
+.big{font-size:26px;font-weight:900;text-align:center;color:var(--gold);letter-spacing:2px}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + var(--safe-b));
+  background:#000d;border:1px solid var(--line);border-radius:22px;padding:8px 16px;
+  font-size:12.5px;font-weight:700;z-index:80;pointer-events:none;
+  animation:tin .2s ease-out; max-width:90%;text-align:center;
+}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="topbar">
+    <span class="ttl">시타델</span>
+    <span class="rnd" id="rndLbl"></span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="iconbtn" id="btnLog">≡</button>
+      <button class="iconbtn" id="btnMenu">⚙</button>
+    </div>
+  </div>
+  <div id="main"></div>
+  <div id="panel">
+    <div id="prompt"></div>
+    <div id="acts"></div>
+    <div id="handWrap"><div id="hand"></div></div>
+  </div>
+</div>
+
+<div id="modal"><div id="msheet">
+  <div id="mtitle"></div>
+  <div id="mbody"></div>
+  <div id="mfoot" class="row"></div>
+</div></div>
+
+<div id="logwrap">
+  <div style="padding:calc(10px + var(--safe-t)) 12px 6px;display:flex;align-items:center">
+    <b style="color:var(--gold)">기록</b>
+    <button class="iconbtn" id="btnLogClose" style="margin-left:auto">✕</button>
+  </div>
+  <div id="logbox"></div>
+</div>
+
+<div id="start"></div>
+
+<script>
+"use strict";
+
+/* ══════════════════════════════════════════════════════════════
+   1. 데이터 ─ 한국어판 <시타델> 2016 구성품
+   ══════════════════════════════════════════════════════════════ */
+
+const TYPE = {
+  noble:{k:'noble', nm:'귀족', cls:'t-noble'},
+  relig:{k:'relig', nm:'종교', cls:'t-relig'},
+  trade:{k:'trade', nm:'상업', cls:'t-trade'},
+  milit:{k:'milit', nm:'군사', cls:'t-milit'},
+  uniq :{k:'uniq' , nm:'특수', cls:'t-uniq' },
+};
+const TYPES5 = ['noble','relig','trade','milit','uniq'];
+
+/* ── 캐릭터 24종 (순번 1~8 × 3변형). 2인전에서 황제는 사용 불가 ── */
+const CHARS = [
+  {id:'assassin',   rank:1, nm:'암살자',    ab:'암살할 캐릭터의 이름을 선언합니다. 암살된 캐릭터는 자기 차례를 쉽니다.'},
+  {id:'witch',      rank:1, nm:'마녀',      ab:'자원 수집 후 마법을 걸 캐릭터를 선언하고 차례를 멈춥니다. 그 캐릭터가 자원 수집을 하면 능력과 남은 차례를 빼앗아 사용합니다.'},
+  {id:'magistrate', rank:1, nm:'치안판사',  ab:'캐릭터 3명에게 영장을 뒷면으로 붙입니다. 진짜 영장이 붙은 캐릭터가 금화를 내고 건설하는 첫 건물을 몰수합니다(비용은 돌려줌).'},
+
+  {id:'thief',      rank:2, nm:'도둑',      ab:'금화를 훔쳐올 목표 캐릭터를 선언합니다. 목표가 호명될 때 개인 금고의 금화를 전부 가져옵니다.'},
+  {id:'blackmailer',rank:2, nm:'협박범',    ab:'캐릭터 2명에게 협박 카드를 뒷면으로 붙입니다. 진짜 협박을 받은 캐릭터가 뇌물(금화 절반)을 안 바치면 금화를 모두 빼앗습니다.'},
+  {id:'spy',        rank:2, nm:'첩자',      ab:'건물 종류 하나를 선언하고 상대의 손패를 봅니다. 선언한 종류의 카드 수만큼 상대의 금화를 가져오고, 같은 수만큼 카드를 받습니다.'},
+
+  {id:'magician',   rank:3, nm:'마술사',    ab:'상대와 손패 전부를 교환하거나, 원하는 만큼 버리고 그 수만큼 카드를 받습니다.'},
+  {id:'wizard',     rank:3, nm:'마법사',    ab:'상대의 손패를 보고 1장을 가져옵니다. 즉시 건설하거나 손에 듭니다. 이름이 똑같은 건물도 건설할 수 있습니다.'},
+  {id:'seer',       rank:3, nm:'예언자',    ab:'상대의 카드를 무작위로 1장 가져오고 아무 카드나 1장 돌려줍니다. 건물을 2채까지 건설할 수 있습니다.'},
+
+  {id:'king',       rank:4, nm:'왕',        ab:'왕관을 가져옵니다. 자기 도시의 귀족 건물 수만큼 금화를 받습니다.'},
+  {id:'emperor',    rank:4, nm:'황제',      ab:'(2인 게임에서는 사용할 수 없습니다)', no2p:true},
+  {id:'archduke',   rank:4, nm:'대공',      ab:'왕관을 가져옵니다. 자기 도시의 귀족 건물 수만큼 카드를 받습니다.'},
+
+  {id:'bishop',     rank:5, nm:'주교',      ab:'자기 도시의 건물에는 8번 캐릭터가 절대 능력을 쓸 수 없습니다. 자기 도시의 종교 건물 수만큼 금화를 받습니다.'},
+  {id:'cardinal',   rank:5, nm:'추기경',    ab:'건설비용이 부족하면 상대에게서 부족한 만큼 금화를 가져옵니다(1닢당 카드 1장을 줌). 자기 도시의 종교 건물 수만큼 카드를 받습니다.'},
+  {id:'abbot',      rank:5, nm:'수도원장',  ab:'가장 금화가 많은 플레이어에게서 금화 1닢을 받습니다. 자기 도시의 종교 건물 수만큼 금화 또는 카드를 받습니다.'},
+
+  {id:'merchant',   rank:6, nm:'상인',      ab:'추가로 금화 1닢을 받습니다. 자기 도시의 상업 건물 수만큼 금화를 받습니다.'},
+  {id:'alchemist',  rank:6, nm:'연금술사',  ab:'차례가 끝날 때 이번 차례에 건설비용으로 낸 금화를 전부 돌려받습니다. 현재 가진 금화보다 비싼 건물은 건설할 수 없습니다.'},
+  {id:'trader',     rank:6, nm:'교역상',    ab:'상업 건물은 몇 채든 건설할 수 있습니다. 자기 도시의 상업 건물 수만큼 금화를 받습니다.'},
+
+  {id:'architect',  rank:7, nm:'건축가',    ab:'추가로 카드 2장을 받습니다. 건물을 3채까지 건설할 수 있습니다.'},
+  {id:'navigator',  rank:7, nm:'항해사',    ab:'추가로 금화 4닢 또는 카드 4장을 받습니다. 절대로 건물을 건설할 수 없습니다.'},
+  {id:'scholar',    rank:7, nm:'학자',      ab:'카드 7장을 살펴본 뒤 1장을 손에 들고 나머지는 더미에 섞습니다. 건물을 2채까지 건설할 수 있습니다.'},
+
+  {id:'warlord',    rank:8, nm:'장군',      ab:'건물 한 채를 파괴할 수 있습니다(파괴비용은 건설비용보다 1닢 적음). 자기 도시의 군사 건물 수만큼 금화를 받습니다.'},
+  {id:'marshal',    rank:8, nm:'육군대장',  ab:'건설비용 3닢 이하인 상대 건물 1채를 점령해 자기 도시로 가져옵니다(건설비용만큼 금화를 상대에게 줌). 자기 도시의 군사 건물 수만큼 금화를 받습니다.'},
+  {id:'diplomat',   rank:8, nm:'외교관',    ab:'상대 도시의 건물 1채와 자기 건물 1채를 교환할 수 있습니다(상대 건물이 더 비싸면 차액만큼 금화를 줌). 자기 도시의 군사 건물 수만큼 금화를 받습니다.'},
+];
+const CH = {}; CHARS.forEach(c=>CH[c.id]=c);
+
+/* ── 기본 건물 54장 ── */
+const BASIC = [
+  {id:'temple',      nm:'사원',   type:'relig', cost:1, n:3},
+  {id:'church',      nm:'예배당', type:'relig', cost:2, n:3},
+  {id:'monastery',   nm:'수도원', type:'relig', cost:3, n:3},
+  {id:'cathedral',   nm:'대성당', type:'relig', cost:5, n:2},
+  {id:'watchtower',  nm:'망루',   type:'milit', cost:1, n:3},
+  {id:'prison',      nm:'감옥',   type:'milit', cost:2, n:3},
+  {id:'battlefield', nm:'병영',   type:'milit', cost:3, n:3},
+  {id:'fortress',    nm:'요새',   type:'milit', cost:5, n:2},
+  {id:'tavern',      nm:'선술집', type:'trade', cost:1, n:5},
+  {id:'market',      nm:'시장',   type:'trade', cost:2, n:4},
+  {id:'tradingpost', nm:'교역소', type:'trade', cost:2, n:3},
+  {id:'docks',       nm:'부두',   type:'trade', cost:3, n:3},
+  {id:'harbor',      nm:'항구',   type:'trade', cost:4, n:3},
+  {id:'townhall',    nm:'시청',   type:'trade', cost:5, n:2},
+  {id:'manor',       nm:'저택',   type:'noble', cost:3, n:5},
+  {id:'castle',      nm:'성',     type:'noble', cost:4, n:4},
+  {id:'palace',      nm:'궁전',   type:'noble', cost:5, n:3},
+];
+
+/* ── 특수(보라) 건물 30종 ── */
+const UNIQUE = [
+  {id:'secretvault', nm:'비밀 금고',   cost:0, tx:'절대로 도시에 건설할 수 없습니다. 게임 종료 시 손에 든 채로 공개하면 3점.'},
+  {id:'haunted',     nm:'유령 지구',   cost:2, tx:'게임이 종료되면 원하는 종류의 건물로 간주합니다.'},
+  {id:'stables',     nm:'마구간',      cost:2, tx:'마구간 건설은 이번 차례의 건설 횟수에 포함되지 않습니다.'},
+  {id:'framework',   nm:'골조',        cost:3, tx:'골조를 파괴하면 건설비용 지불 없이 건물 1채를 건설할 수 있습니다.'},
+  {id:'statue',      nm:'동상',        cost:3, tx:'게임 종료 시 왕관을 가지고 있다면 추가로 5점.'},
+  {id:'keep',        nm:'외성',        cost:3, tx:'절대로 8번 캐릭터 능력의 목표가 되지 않습니다.'},
+  {id:'armory',      nm:'병기고',      cost:3, tx:'자기 차례에 병기고를 파괴하고 다른 건물 1채를 파괴할 수 있습니다.'},
+  {id:'basilica',    nm:'바실리카',    cost:4, tx:'게임 종료 시 건설비용이 홀수인 건물당 1점.'},
+  {id:'museum',      nm:'박물관',      cost:4, tx:'차례마다 한 번, 손에 든 카드 1장을 박물관 아래에 넣습니다. 종료 시 1장당 1점.'},
+  {id:'monument',    nm:'기념물',      cost:4, tx:'도시에 건물이 5채 이상이면 건설할 수 없습니다. 도시 완성 판별 시 건물 2채로 간주.'},
+  {id:'poorhouse',   nm:'구빈원',      cost:4, tx:'차례를 끝냈을 때 개인 금고에 금화가 없다면 금화 1닢을 받습니다.'},
+  {id:'observatory', nm:'천문대',      cost:4, tx:'자원 수집으로 건물 카드를 얻는다면 2장이 아니라 3장을 살펴봅니다.'},
+  {id:'quarry',      nm:'채석장',      cost:5, tx:'이미 자기 도시에 있는 건물과 이름이 똑같은 건물을 건설할 수 있습니다.'},
+  {id:'treasury',    nm:'제국 보고',   cost:5, tx:'게임 종료 시 개인 금고에 남아있는 금화 1닢당 1점.'},
+  {id:'capitol',     nm:'의사당',      cost:5, tx:'게임 종료 시 같은 종류의 건물이 최소 3채 있다면 추가로 3점.'},
+  {id:'ivorytower',  nm:'상아탑',      cost:5, tx:'게임 종료 시 자기 도시의 특수 건물이 상아탑뿐이라면 추가로 5점.'},
+  {id:'factory',     nm:'공장',        cost:5, tx:'특수 건물을 건설할 때 금화 1닢을 적게 냅니다.'},
+  {id:'laboratory',  nm:'실험실',      cost:5, tx:'차례마다 한 번, 손에 든 카드 1장을 버리고 금화 2닢을 받습니다.'},
+  {id:'wishingwell', nm:'소원의 우물', cost:5, tx:'게임 종료 시 자기 도시의 특수 건물 1채당(소원의 우물 포함) 1점.'},
+  {id:'smithy',      nm:'대장간',      cost:5, tx:'차례마다 한 번, 금화 2닢을 내고 카드 3장을 받습니다.'},
+  {id:'graveyard',   nm:'공동묘지',    cost:5, tx:'자기 도시의 아무 건물 1채를 파괴하면 건설비용 지불 없이 공동묘지를 건설할 수 있습니다.'},
+  {id:'maproom',     nm:'지도 보관실', cost:5, tx:'게임 종료 시 손에 든 건물 카드 1장당 1점.'},
+  {id:'magicschool', nm:'마법학교',    cost:6, tx:'건물 종류에 따라 자원을 받는 능력을 쓸 때 원하는 종류의 건물로 간주합니다.'},
+  {id:'theater',     nm:'극장',        cost:6, tx:'선택 단계가 종료될 때 상대와 캐릭터 카드를 바꿀 수 있습니다.'},
+  {id:'dragongate',  nm:'드래곤 게이트',cost:6,tx:'게임이 종료되면 추가로 2점.'},
+  {id:'greatwall',   nm:'장성',        cost:6, tx:'8번 캐릭터는 장성이 있는 도시 건물(장성 제외)에 능력을 쓸 때 금화 1닢을 더 내야 합니다.'},
+  {id:'library',     nm:'도서관',      cost:6, tx:'자원 수집으로 건물 카드를 얻는다면 가져간 카드를 전부 손에 듭니다.'},
+  {id:'thievesden',  nm:'도적 소굴',   cost:6, tx:'건설비용의 일부 또는 전부를 (금화가 아니라) 건물 카드로 낼 수 있습니다(금화 1닢당 카드 1장).'},
+  {id:'park',        nm:'공원',        cost:6, tx:'차례를 끝냈을 때 손에 든 건물 카드가 없다면 카드 2장을 받습니다.'},
+  {id:'goldmine',    nm:'금광',        cost:6, tx:'자원 수집으로 금화를 얻는다면 금화 1닢을 추가로 얻습니다.'},
+];
+
+const PROTO = {};
+BASIC.forEach(b=>PROTO[b.id]={id:b.id,nm:b.nm,type:b.type,cost:b.cost,tx:''});
+UNIQUE.forEach(u=>PROTO[u.id]={id:u.id,nm:u.nm,type:'uniq',cost:u.cost,tx:u.tx});
+
+/* ── AI 난이도 4단계 ── */
+const DIFFS = [
+  {id:'rookie', nm:'애송이',   tier:'중급',   em:'🐣',
+   desc:'기본기는 있으나 실수가 잦다. 눈앞의 이득만 본다.',
+   noise:3.4, infer:0.00, sim:0,   greed:0.55, memory:false, blunder:0.18},
+  {id:'jieun',  nm:'지은아기', tier:'고급',   em:'🎀',
+   desc:'버려진 카드와 네 손패를 기억한다. 견제를 시작한다.',
+   noise:1.3, infer:0.55, sim:0,   greed:0.80, memory:true,  blunder:0.06},
+  {id:'jangpro',nm:'장프로',   tier:'최상급', em:'🎯',
+   desc:'네 캐릭터를 읽는다. 템포와 점수 레이스를 계산한다.',
+   noise:0.60,infer:0.85, sim:40,  greed:0.95, memory:true,  blunder:0.03},
+  {id:'devil',  nm:'마귀',     tier:'귀신',   em:'👹',
+   desc:'숨긴 패까지 추론한다. 수를 미리 굴려보고 최선만 둔다.',
+   noise:0.0, infer:1.00, sim:520, greed:1.00, memory:true,  blunder:0.00},
+];
+
+/* ══════════════════════════════════════════════════════════════
+   2. 유틸
+   ══════════════════════════════════════════════════════════════ */
+const $  = s=>document.querySelector(s);
+const el = (t,c,x)=>{const e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e;};
+const rnd = n=>Math.floor(Math.random()*n);
+const pick = a=>a[rnd(a.length)];
+const shuffle = a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const sum = (a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const P0 = id=>PROTO[id];
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ══════════════════════════════════════════════════════════════
+   3. 게임 상태
+   ══════════════════════════════════════════════════════════════ */
+const CITY_GOAL = 8;      // 2인 게임: 8번째 건물로 도시 완성
+let G = null;
+let uidSeq = 1;
+
+function newPlayer(idx,name,isAI){
+  return {
+    idx, name, isAI,
+    gold:2, hand:[], city:[],          // city: {u, id, deco:false}
+    chars:[],                          // [{id, killed, robbedBy, warrant, blackmail, done}]
+    museum:[],                         // 박물관 아래 카드
+    completedAt:null,                  // 도시 완성 라운드
+    hauntedAs:null,                    // 유령 지구 종류 지정
+  };
+}
+
+function startGame(diffId, charIds, uniqueIds){
+  const diff = DIFFS.find(d=>d.id===diffId);
+  G = {
+    diff,
+    chars: charIds.slice().sort((a,b)=>CH[a].rank-CH[b].rank),
+    deck: shuffle(buildDeckIds(uniqueIds)),
+    discard: [],
+    P: [newPlayer(0,'나',false), newPlayer(1, diff.nm, true)],
+    crown: rnd(2),
+    round: 0,
+    phase: 'draft',
+    log: [],
+    firstComplete: null,
+    draft: null, turn: null, rankIdx: 0,
+    charInfo: {},          // id -> {owner, killed, robbedBy, ...}  라운드별
+    hist: [],              // 드래프트 관측 기록(AI 추론용)
+    ended:false,
+  };
+  for(const p of G.P){ for(let i=0;i<4;i++) p.hand.push(G.deck.pop()); p.gold = 2; }
+  logR();
+  say(`${G.P[G.crown].name} 이(가) 왕관을 가지고 시작합니다.`);
+  beginRound();
+}
+
+function buildDeckIds(uniqueIds){
+  const d=[];
+  BASIC.forEach(b=>{ for(let i=0;i<b.n;i++) d.push(b.id); });
+  uniqueIds.forEach(id=>d.push(id));
+  return d;
+}
+
+function drawCard(){
+  if(!G.deck.length){ G.deck = shuffle(G.discard.splice(0)); }
+  return G.deck.length ? G.deck.pop() : null;
+}
+function drawN(n){ const a=[]; for(let i=0;i<n;i++){const c=drawCard(); if(c)a.push(c);} return a; }
+function bottom(id){ G.deck.unshift(id); }
+function toDiscard(id){ G.discard.push(id); }
+
+function say(t){ G.log.push({r:G.round,t}); if(typeof renderLog==='function') renderLog(); }
+function logR(){ G.log.push({r:G.round,rh:true,t:`━━ ${G.round?('라운드 '+G.round):'게임 준비'} ━━`}); }
+
+/* ── 조회 헬퍼 ── */
+const opp = i => 1-i;
+function cityIds(p){ return p.city.map(c=>c.id); }
+function hasB(p,id){ return p.city.some(c=>c.id===id); }
+function nType(p,t){
+  let n = p.city.filter(c=>P0(c.id).type===t).length;
+  if(hasB(p,'magicschool') && t!=='uniq') n += 1;   // 마법학교: 원하는 종류로 간주
+  return n;
+}
+function cityCount(p){ return p.city.length + (hasB(p,'monument')?1:0); }
+function cityDone(p){ return cityCount(p) >= CITY_GOAL; }
+function bcost(p,id){                              // 실제 지불 비용
+  let c = P0(id).cost;
+  if(P0(id).type==='uniq' && hasB(p,'factory')) c = Math.max(0,c-1);
+  return c;
+}
+function myChar(p,id){ return p.chars.find(c=>c.id===id); }
+function ownerOf(cid){ for(const p of G.P) if(p.chars.some(c=>c.id===cid)) return p.idx; return -1; }
+function charState(cid){ for(const p of G.P){ const c=p.chars.find(x=>x.id===cid); if(c) return c; } return null; }
+
+/* ══════════════════════════════════════════════════════════════
+   4. 라운드 · 선택 단계(2인 드래프트)
+   ══════════════════════════════════════════════════════════════ */
+function beginRound(){
+  G.round++; logR();
+  for(const p of G.P){ p.chars=[]; }
+  G.phase='draft';
+  const pool = shuffle(G.chars.slice());
+  G.draft = {
+    pool,
+    blind: pool.pop(),          // 무작위 1장 뒷면으로 제거
+    cur: G.crown,
+    stage: 0,                   // 0: 왕관주인 1장 / 1~3: 1장 갖고 1장 버리기
+    sub: 'keep',                // 'keep' | 'discard'
+    discards: [],
+  };
+  G.hist.push({round:G.round, obs:[[],[]], acts:[]});
+  if(G.hist.length>3) G.hist.shift();
+  observe(G.crown, pool);       // 왕관 주인은 7장을 본다
+  say('선택 단계 — 캐릭터 카드 1장이 뒷면으로 제거되었습니다.');
+  driveDraft();
+}
+
+function observe(pi, arr){
+  const h=G.hist[G.hist.length-1];
+  h.obs[pi].push(arr.slice());
+}
+
+function draftAct(pi,cid,kind){ G.hist[G.hist.length-1].acts.push({pi,cid,kind}); }
+
+function draftPickKeep(cid){
+  const d=G.draft, p=G.P[d.cur];
+  draftAct(d.cur,cid,'keep');
+  d.pool.splice(d.pool.indexOf(cid),1);
+  p.chars.push({id:cid, killed:false, robbedBy:null, warrant:null, blackmail:null, done:false, bewitched:false});
+  if(d.stage===0){ nextDraftSeat(); }
+  else { d.sub='discard'; driveDraft(); }
+}
+function draftPickDiscard(cid){
+  const d=G.draft;
+  draftAct(d.cur,cid,'discard');
+  d.pool.splice(d.pool.indexOf(cid),1);
+  d.discards.push(cid);
+  nextDraftSeat();
+}
+function nextDraftSeat(){
+  const d=G.draft;
+  d.stage++; d.sub='keep'; d.cur=opp(d.cur);
+  if(d.stage>3){ endDraft(); return; }
+  observe(d.cur, d.pool);
+  driveDraft();
+}
+
+function endDraft(){
+  for(const p of G.P) p.chars.sort((a,b)=>CH[a.id].rank-CH[b.id].rank);
+  G.draft=null;
+  // 극장 처리
+  const theaterOwners = G.P.filter(p=>hasB(p,'theater'));
+  if(theaterOwners.length){ askTheater(theaterOwners[0]); return; }
+  beginActionPhase();
+}
+
+function beginActionPhase(){
+  G.phase='action'; G.rankIdx=0;
+  say('행동 단계 시작.');
+  nextRank();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. 행동 단계
+   ══════════════════════════════════════════════════════════════ */
+function nextRank(){
+  if(G.ended) return;
+  while(G.rankIdx < G.chars.length){
+    const cid = G.chars[G.rankIdx]; G.rankIdx++;
+    const o = ownerOf(cid);
+    // 4번 캐릭터: 암살당해도 왕관은 가져간다
+    if(CH[cid].rank===4 && o>=0 && (cid==='king'||cid==='archduke')){
+      if(G.crown!==o){ G.crown=o; say(`<b>${CH[cid].nm}</b> — ${G.P[o].name} 이(가) 왕관을 가져갑니다.`); }
+    }
+    if(o<0){ continue; }                       // 아무도 안 가진 캐릭터
+    const st = charState(cid);
+    if(st.killed){ say(`<b>${CH[cid].nm}</b> 은(는) 암살당해 차례를 쉽니다.`); continue; }
+    startTurn(o, cid);
+    return;
+  }
+  endRound();
+}
+
+function startTurn(pi, cid){
+  const p=G.P[pi], st=myChar(p,cid);
+  G.turn = {
+    pi, cid, st,
+    gathered:false, builds:0, ended:false,
+    spent:0,
+    once:{laboratory:false, smithy:false, museum:false},
+    abilityDone:false,
+    freeBuild:0,                 // 골조/공동묘지 등 무료 건설권
+    stolenBy:null,
+    bewitchedTo:null,            // 마녀가 이 차례를 가로챌 대상
+    hijack:null,                 // 마녀가 가로챈 캐릭터 (조종 중)
+  };
+  say(`<b>${CH[cid].nm}</b> 호명 — ${p.name}`);
+  // 도둑에게 털림
+  if(st.robbedBy!=null && p.gold>0){
+    const t=G.P[st.robbedBy];
+    t.gold += p.gold;
+    say(`도둑! ${p.name} → ${t.name} 금화 ${p.gold}닢을 빼앗겼습니다.`);
+    p.gold=0;
+  }
+  // 즉시 보너스
+  immediateBonus(pi,cid);
+  refresh();
+  if(p.isAI) setTimeout(aiTurn, 420);
+}
+
+function immediateBonus(pi,cid){
+  const p=G.P[pi];
+  if(cid==='merchant'){ p.gold+=1; say('상인: 추가 금화 1닢.'); }
+  if(cid==='architect'){ const c=drawN(2); p.hand.push(...c); say('건축가: 카드 2장을 받습니다.'); }
+}
+
+function buildLimit(){
+  const t=G.turn; const cid = t.hijack||t.cid;
+  if(cid==='navigator') return 0;
+  if(cid==='architect') return 3;
+  if(cid==='seer'||cid==='scholar') return 2;
+  return 1;
+}
+
+/* ── 자원 수집 ── */
+function gatherGold(){
+  const t=G.turn,p=G.P[t.pi];
+  let n=2; if(hasB(p,'goldmine')) n+=1;
+  p.gold+=n; t.gathered=true;
+  say(`자원 수집: 금화 ${n}닢.`);
+  afterGather();
+}
+function gatherCardsStart(){
+  const t=G.turn,p=G.P[t.pi];
+  const n = hasB(p,'observatory')?3:2;
+  const cards = drawN(n);
+  if(hasB(p,'library')){
+    p.hand.push(...cards); t.gathered=true;
+    say(`자원 수집: 도서관 — 카드 ${cards.length}장을 전부 손에 듭니다.`);
+    afterGather(); return;
+  }
+  return cards;   // UI/AI가 1장 선택
+}
+function gatherCardsPick(cards, keepId){
+  const t=G.turn,p=G.P[t.pi];
+  p.hand.push(keepId);
+  cards.forEach(c=>{ if(c!==keepId||cards.indexOf(c)!==cards.indexOf(keepId)) {} });
+  const rest=cards.slice(); rest.splice(rest.indexOf(keepId),1);
+  rest.forEach(bottom);
+  t.gathered=true;
+  say(`자원 수집: 카드 ${cards.length}장 중 1장 보유.`);
+  afterGather();
+}
+
+function afterGather(){
+  const t=G.turn, p=G.P[t.pi], st=t.st;
+  // 협박 판정
+  if(st.blackmail==='real' || st.blackmail==='fake'){ resolveBlackmail(); return; }
+  // 마녀가 이 캐릭터에게 마법을 걸었다면 → 마녀가 남은 차례를 가로챈다
+  if(st.bewitched){ hijackByWitch(); return; }
+  refresh();
+  if(p.isAI) setTimeout(aiTurn, 380);
+}
+
+/* ── 협박범 ── */
+function resolveBlackmail(){
+  const t=G.turn,p=G.P[t.pi],st=t.st;
+  const bmIdx = G.P.findIndex(x=>x.chars.some(c=>c.id==='blackmailer'));
+  const bribe = Math.floor(p.gold/2);
+  if(p.isAI){
+    const payIt = aiDecideBribe(p, st, bribe);
+    finishBlackmail(payIt);
+  } else {
+    modal('협박', [
+      {t:`뇌물 ${bribe}닢을 바친다`, s:'협박 카드가 사라집니다', v:true},
+      {t:'거절한다', s:'진짜 협박이면 금화 전부를 잃습니다', v:false},
+    ], v=>finishBlackmail(v));
+  }
+}
+function finishBlackmail(pay){
+  const t=G.turn,p=G.P[t.pi],st=t.st;
+  const bi = G.P.findIndex(x=>x.chars.some(c=>c.id==='blackmailer'));
+  const bp = bi>=0?G.P[bi]:null;
+  if(pay){
+    const b=Math.floor(p.gold/2);
+    p.gold-=b; if(bp) bp.gold+=b;
+    say(`협박: 뇌물 ${b}닢을 바쳤습니다.`);
+  } else {
+    if(st.blackmail==='real'){
+      say(`협박 성공! 진짜 협박 카드 — ${p.name}의 금화 ${p.gold}닢을 모두 빼앗깁니다.`);
+      if(bp) bp.gold+=p.gold; p.gold=0;
+    } else {
+      say('협박 실패 — 가짜 협박 카드였습니다.');
+    }
+  }
+  st.blackmail=null;
+  if(st.bewitched){ hijackByWitch(); return; }
+  refresh();
+  if(p.isAI) setTimeout(aiTurn,380);
+}
+
+/* ── 마녀 ── */
+function hijackByWitch(){
+  const t=G.turn, victim=G.P[t.pi];
+  const wi = G.P.findIndex(x=>x.chars.some(c=>c.id==='witch'));
+  if(wi<0){ endTurn(); return; }
+  say(`마녀의 마법! ${CH[t.cid].nm}의 능력과 남은 차례를 ${G.P[wi].name} 이(가) 빼앗습니다.`);
+  const victimChar = t.cid;
+  G.turn = {
+    pi: wi, cid:'witch', st: myChar(G.P[wi],'witch'),
+    gathered:true, builds:0, ended:false, spent:0,
+    once:{laboratory:false,smithy:false,museum:false},
+    abilityDone:false, freeBuild:0, hijack:victimChar,
+  };
+  refresh();
+  if(G.P[wi].isAI) setTimeout(aiTurn,420);
+}
+
+/* ── 건설 ── */
+function canBuild(pi,id,opts){
+  opts=opts||{};
+  const p=G.P[pi], t=G.turn, pr=P0(id);
+  if(id==='secretvault') return '비밀 금고는 건설할 수 없습니다';
+  if(!t) return '차례가 아닙니다';
+  const cid = t.hijack||t.cid;
+  if(cid==='navigator'&&!opts.free) return '항해사는 건설할 수 없습니다';
+  const dupOK = hasB(p,'quarry') || opts.dupOK;
+  if(hasB(p,id) && !dupOK) return '이미 같은 이름의 건물이 있습니다';
+  if(hasB(p,id) && dupOK && hasB(p,'quarry')){
+    if(p.city.filter(c=>c.id===id).length>=2) return '채석장으로도 2채까지만 가능합니다';
+  }
+  if(id==='monument' && p.city.length>=5) return '건물이 5채 이상이면 기념물을 지을 수 없습니다';
+  if(opts.free) return null;
+  // 건설 횟수
+  if(id!=='stables'){
+    let lim = buildLimit();
+    if(cid==='trader' && pr.type==='trade') lim = 99;
+    if(t.freeBuild>0) lim = Math.max(lim, t.builds+1);
+    if(t.builds>=lim) return '더 이상 건설할 수 없습니다';
+  }
+  const cost = bcost(p,id);
+  if(cid==='alchemist' && cost>p.gold) return '연금술사는 가진 금화보다 비싼 건물을 지을 수 없습니다';
+  const cardsPayable = (id==='thievesden')? Math.max(0,p.hand.length-1) : 0;
+  const cardinalHelp = (cid==='cardinal')? G.P[opp(pi)].gold : 0;
+  if(p.gold + cardsPayable + Math.min(cardinalHelp, p.hand.length-1) < cost) return '금화가 부족합니다';
+  return null;
+}
+
+function doBuild(pi,id,payCards,opts){
+  opts=opts||{};
+  const p=G.P[pi], t=G.turn;
+  let cost = bcost(p,id);
+  if(opts.free){ cost=0; }
+  payCards = payCards||0;
+  if(payCards>0){                      // 도적 소굴
+    const idx=[];
+    for(let i=0;i<payCards;i++){ const h=p.hand.findIndex(x=>x!==id); if(h>=0){ toDiscard(p.hand.splice(h,1)[0]); } }
+    cost -= payCards;
+    say(`도적 소굴: 카드 ${payCards}장으로 비용을 지불.`);
+  }
+  const cid = t? (t.hijack||t.cid):null;
+  if(cost>p.gold && cid==='cardinal'){          // 추기경
+    const need = cost-p.gold, o=G.P[opp(pi)];
+    const give = Math.min(need, o.gold, p.hand.length-1);
+    o.gold-=give; p.gold+=give;
+    for(let i=0;i<give;i++){ const h=p.hand.findIndex(x=>x!==id); if(h>=0) o.hand.push(p.hand.splice(h,1)[0]); }
+    say(`추기경: 상대에게서 금화 ${give}닢을 받고 카드 ${give}장을 넘깁니다.`);
+  }
+  p.gold -= cost; if(t) t.spent += cost;
+  p.hand.splice(p.hand.indexOf(id),1);
+
+  // 치안판사 영장
+  const st = t? t.st : null;
+  const warrantOn = st && st.warrant==='real' && cost>0 && !opts.free;
+  if(warrantOn){
+    const mi = G.P.findIndex(x=>x.chars.some(c=>c.id==='magistrate'));
+    p.gold += cost; if(t) t.spent -= cost;
+    if(mi>=0){
+      G.P[mi].city.push({u:uidSeq++, id});
+      say(`치안판사의 영장! <b>${P0(id).nm}</b>이(가) 몰수되어 ${G.P[mi].name}의 도시로 넘어갑니다(비용 ${cost}닢 반환).`);
+    }
+    st.warrant=null;
+    postBuild(pi,id,opts,true);
+    return;
+  }
+  p.city.push({u:uidSeq++, id});
+  say(`${p.name}: <b>${P0(id).nm}</b> 건설 (${cost}닢).`);
+  postBuild(pi,id,opts,false);
+}
+
+function postBuild(pi,id,opts,seized){
+  const p=G.P[pi], t=G.turn;
+  if(t && id!=='stables' && !opts.free) t.builds++;
+  if(t && opts.free && t.freeBuild>0) t.freeBuild--;
+  if(!seized && cityDone(p) && p.completedAt==null){
+    p.completedAt=G.round;
+    if(G.firstComplete==null){ G.firstComplete=pi; say(`🏰 ${p.name} 이(가) 가장 먼저 도시를 완성했습니다!`); }
+    else say(`🏰 ${p.name} 도시 완성.`);
+  }
+  refresh();
+}
+
+/* ── 차례 종료 ── */
+function endTurn(){
+  const t=G.turn; if(!t||t.ended) return;
+  t.ended=true;
+  const p=G.P[t.pi];
+  const cid = t.hijack||t.cid;
+  // 건물 종류별 수입 (차례 마지막에 정산 — 항상 최선)
+  typeIncome(p,cid);
+  if(cid==='alchemist' && t.spent>0){ p.gold+=t.spent; say(`연금술사: 지불한 금화 ${t.spent}닢을 돌려받습니다.`); }
+  if(hasB(p,'poorhouse') && p.gold===0){ p.gold+=1; say('구빈원: 금화 1닢.'); }
+  if(hasB(p,'park') && p.hand.length===0){ p.hand.push(...drawN(2)); say('공원: 카드 2장.'); }
+  G.turn=null;
+  refresh();
+  setTimeout(nextRank, 260);
+}
+
+function typeIncome(p,cid){
+  const map = {king:'noble', archduke:'noble', bishop:'relig', cardinal:'relig',
+               merchant:'trade', trader:'trade',
+               warlord:'milit', marshal:'milit', diplomat:'milit'};
+  const t = map[cid]; if(!t) return;
+  const n = nType(p,t);
+  if(cid==='archduke'||cid==='cardinal'){
+    if(n>0){ p.hand.push(...drawN(n)); say(`${CH[cid].nm}: ${TYPE[t].nm} 건물 ${n}채 → 카드 ${n}장.`); }
+  } else if(cid==='abbot'){
+    if(n>0){ p.gold+=n; say(`수도원장: 종교 건물 ${n}채 → 금화 ${n}닢.`); }
+  } else {
+    if(n>0){ p.gold+=n; say(`${CH[cid].nm}: ${TYPE[t].nm} 건물 ${n}채 → 금화 ${n}닢.`); }
+  }
+}
+
+function endRound(){
+  // 라운드 정리
+  for(const p of G.P) p.chars=[];
+  if(G.P.some(p=>p.completedAt!=null)){ gameOver(); return; }
+  if(G.round>=40){ gameOver(); return; }
+  beginRound();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   6. 점수 계산
+   ══════════════════════════════════════════════════════════════ */
+function scoreOf(pi){
+  const p=G.P[pi]; const d=[];
+  let s=0;
+  const base = sum(p.city, c=>P0(c.id).cost);
+  s+=base; d.push(['건설비용 합계', base]);
+  // 5종류
+  const kinds=new Set(p.city.map(c=>P0(c.id).type));
+  let allKinds = TYPES5.every(t=>kinds.has(t));
+  if(!allKinds && hasB(p,'haunted')){
+    const missing = TYPES5.filter(t=>!kinds.has(t));
+    if(missing.length===1) allKinds=true;      // 유령 지구가 보충
+  }
+  if(allKinds){ s+=3; d.push(['5종류 전부 건설',3]); }
+  if(p.completedAt!=null){
+    const v = (G.firstComplete===pi)?4:2;
+    s+=v; d.push([v===4?'가장 먼저 도시 완성':'도시 완성', v]);
+  }
+  // 특수 건물 보너스
+  const U=(id)=>hasB(p,id);
+  if(U('dragongate')){ s+=2; d.push(['드래곤 게이트',2]); }
+  if(U('statue') && G.crown===pi){ s+=5; d.push(['동상(왕관 보유)',5]); }
+  if(U('basilica')){ const n=p.city.filter(c=>P0(c.id).cost%2===1).length; s+=n; d.push([`바실리카(홀수 ${n}채)`,n]); }
+  if(U('treasury')){ s+=p.gold; d.push([`제국 보고(금화 ${p.gold})`,p.gold]); }
+  if(U('maproom')){ s+=p.hand.length; d.push([`지도 보관실(손패 ${p.hand.length})`,p.hand.length]); }
+  if(U('wishingwell')){ const n=p.city.filter(c=>P0(c.id).type==='uniq').length; s+=n; d.push([`소원의 우물(특수 ${n}채)`,n]); }
+  if(U('museum')){ s+=p.museum.length; d.push([`박물관(${p.museum.length}장)`,p.museum.length]); }
+  if(U('imperialtreasury')){}
+  if(U('capitol')){
+    const cnt={}; p.city.forEach(c=>{const t=P0(c.id).type; cnt[t]=(cnt[t]||0)+1;});
+    if(Object.values(cnt).some(v=>v>=3)){ s+=3; d.push(['의사당',3]); }
+  }
+  if(U('ivorytower')){
+    if(p.city.filter(c=>P0(c.id).type==='uniq').length===1){ s+=5; d.push(['상아탑(유일 특수)',5]); }
+  }
+  if(p.hand.includes('secretvault')){ s+=3; d.push(['비밀 금고(손패 공개)',3]); }
+  return {total:s, detail:d};
+}
+
+function gameOver(){
+  G.ended=true; G.phase='over';
+  const a=scoreOf(0), b=scoreOf(1);
+  let winner;
+  if(a.total!==b.total) winner = a.total>b.total?0:1;
+  else winner = null;   // 동점 → 캐릭터 순번(마지막 라운드) 비교는 카드 반납 후라 무승부 처리
+  G.result={a,b,winner};
+  refresh();
+  showResult();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. 8번 캐릭터 목표 산정
+   ══════════════════════════════════════════════════════════════ */
+function r8Targets(pi, kind){          // kind: 'destroy' | 'seize' | 'swap'
+  const out=[];
+  G.P.forEach((q,qi)=>{
+    if(kind!=='destroy' && qi===pi) return;
+    if(qi!==pi){
+      if(q.chars.some(c=>c.id==='bishop' && !c.killed)) return;   // 주교 보호
+    }
+    if(cityDone(q)) return;                                        // 완성된 도시
+    const wall = hasB(q,'greatwall');
+    q.city.forEach(c=>{
+      if(c.id==='keep') return;                                    // 외성
+      const base = P0(c.id).cost;
+      const extra = (wall && c.id!=='greatwall')?1:0;
+      if(kind==='destroy'){ out.push({pi:qi,u:c.u,id:c.id, price: Math.max(0,base-1)+extra}); }
+      else if(kind==='seize'){ if(base<=3) out.push({pi:qi,u:c.u,id:c.id, price: base+extra}); }
+      else { out.push({pi:qi,u:c.u,id:c.id, base, extra}); }
+    });
+  });
+  return out;
+}
+function anyCity(exclude){             // 병기고: 보호 무시, 모든 건물
+  const out=[];
+  G.P.forEach((q,qi)=>q.city.forEach(c=>{
+    if(exclude && c.u===exclude) return;
+    out.push({pi:qi,u:c.u,id:c.id});
+  }));
+  return out;
+}
+function removeFromCity(qi,u){
+  const q=G.P[qi]; const i=q.city.findIndex(c=>c.u===u);
+  if(i<0) return null; const c=q.city.splice(i,1)[0]; return c;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. 행동 생성 & 적용
+   ══════════════════════════════════════════════════════════════ */
+function activeChar(){ const t=G.turn; return t? (t.hijack||t.cid) : null; }
+
+function canUseAbility(){
+  const t=G.turn; if(!t||t.abilityDone) return false;
+  const cid=activeChar();
+  return ['assassin','witch','magistrate','thief','blackmailer','spy','magician',
+          'wizard','seer','abbot','navigator','scholar','warlord','marshal','diplomat'].includes(cid);
+}
+function abilityNeedsGather(){ return ['witch'].includes(activeChar()); }
+
+/* 대상이 될 수 있는 캐릭터 (순번 n 이상) */
+function targetChars(minRank){
+  return G.chars.filter(id=>CH[id].rank>=minRank);
+}
+
+/* ── AI/UI 공용: 완전히 지정된 행동 목록 ── */
+function genActions(pi){
+  const t=G.turn; if(!t||t.pi!==pi) return [];
+  const p=G.P[pi], o=G.P[opp(pi)], cid=activeChar();
+  const A=[];
+  if(!t.gathered){
+    A.push({k:'gold'});
+    A.push({k:'cards'});
+    return A;
+  }
+  // 능력
+  if(canUseAbility()){
+    if(cid==='assassin') targetChars(2).forEach(c=>A.push({k:'ab',ch:'assassin',target:c}));
+    if(cid==='witch')    targetChars(2).forEach(c=>A.push({k:'ab',ch:'witch',target:c}));
+    if(cid==='magistrate'){
+      const cs=targetChars(2);
+      cs.forEach(r=>{ const rest=cs.filter(x=>x!==r);
+        for(let i=0;i<rest.length;i++) for(let j=i+1;j<rest.length;j++)
+          A.push({k:'ab',ch:'magistrate',real:r,fakes:[rest[i],rest[j]]}); });
+    }
+    if(cid==='thief') targetChars(3).forEach(c=>{
+      const st=charState(c); if(st&&(st.killed||st.bewitched)) return;
+      A.push({k:'ab',ch:'thief',target:c}); });
+    if(cid==='blackmailer'){
+      const cs=targetChars(3);
+      cs.forEach(r=>cs.forEach(f=>{ if(r!==f) A.push({k:'ab',ch:'blackmailer',real:r,fake:f}); }));
+    }
+    if(cid==='spy') ['noble','relig','trade','milit','uniq'].forEach(ty=>A.push({k:'ab',ch:'spy',type:ty}));
+    if(cid==='magician'){
+      A.push({k:'ab',ch:'magician',mode:'swap'});
+      A.push({k:'ab',ch:'magician',mode:'redraw',n:0});
+      for(let n=1;n<=p.hand.length;n++) A.push({k:'ab',ch:'magician',mode:'redraw',n});
+    }
+    if(cid==='wizard' && o.hand.length) o.hand.forEach((id,i)=>{
+      A.push({k:'ab',ch:'wizard',take:id,now:false});
+      if(bcost(p,id)<=p.gold && id!=='secretvault') A.push({k:'ab',ch:'wizard',take:id,now:true});
+    });
+    if(cid==='seer' && o.hand.length) A.push({k:'ab',ch:'seer'});
+    if(cid==='abbot'){ A.push({k:'ab',ch:'abbot',want:'gold'}); A.push({k:'ab',ch:'abbot',want:'cards'}); }
+    if(cid==='navigator'){ A.push({k:'ab',ch:'navigator',mode:'gold'}); A.push({k:'ab',ch:'navigator',mode:'cards'}); }
+    if(cid==='scholar') A.push({k:'ab',ch:'scholar'});
+    if(cid==='warlord') r8Targets(pi,'destroy').forEach(x=>{ if(x.price<=p.gold) A.push({k:'ab',ch:'warlord',t:x}); });
+    if(cid==='marshal') r8Targets(pi,'seize').forEach(x=>{ if(x.price<=p.gold) A.push({k:'ab',ch:'marshal',t:x}); });
+    if(cid==='diplomat') r8Targets(pi,'swap').forEach(x=>{
+      p.city.forEach(m=>{ if(m.id==='keep') return;
+        const diff=Math.max(0, x.base - P0(m.id).cost) + x.extra;
+        if(diff<=p.gold) A.push({k:'ab',ch:'diplomat',t:x,mine:m.u,pay:diff}); });
+    });
+  }
+  // 건설
+  const seen=new Set();
+  p.hand.forEach(id=>{
+    if(seen.has(id)) return; seen.add(id);
+    if(!canBuild(pi,id)) A.push({k:'build',id});
+    else if(id==='thievesden'){
+      const cost=bcost(p,id);
+      for(let c=1;c<=Math.min(cost,p.hand.length-1);c++)
+        if(p.gold>=cost-c && !hasB(p,id)) { A.push({k:'build',id,cards:c}); break; }
+    }
+  });
+  // 특수 건물 행동
+  if(hasB(p,'laboratory') && !t.once.laboratory && p.hand.length)
+    A.push({k:'lab'});
+  if(hasB(p,'smithy') && !t.once.smithy && p.gold>=2) A.push({k:'smithy'});
+  if(hasB(p,'museum') && !t.once.museum && p.hand.length) A.push({k:'museum'});
+  if(hasB(p,'armory')) anyCity(p.city.find(c=>c.id==='armory').u).forEach(x=>A.push({k:'armory',t:x}));
+  if(hasB(p,'framework') && p.hand.length) p.hand.forEach(id=>{
+    if(id!=='secretvault' && !canBuild(pi,id,{free:true})) A.push({k:'framework',id}); });
+  if(p.hand.includes('graveyard') && !hasB(p,'graveyard') && p.city.length)
+    p.city.forEach(c=>A.push({k:'graveyard',u:c.u}));
+  A.push({k:'end'});
+  return A;
+}
+
+/* ── 행동 적용 ── */
+function applyAction(pi, a, extra){
+  const t=G.turn, p=G.P[pi], o=G.P[opp(pi)];
+  extra=extra||{};
+  switch(a.k){
+    case 'gold': gatherGold(); return;
+    case 'cards': {
+      const cards = gatherCardsStart();
+      if(!cards) return;                       // 도서관: 이미 처리됨
+      if(p.isAI){ gatherCardsPick(cards, aiPickDraw(p,cards)); }
+      else { chooseDrawUI(cards); }
+      return;
+    }
+    case 'build': doBuild(pi, a.id, a.cards||0); break;
+    case 'lab': {
+      const id = extra.discard!=null?extra.discard: aiWorstCard(p);
+      p.hand.splice(p.hand.indexOf(id),1); toDiscard(id);
+      p.gold+=2; t.once.laboratory=true;
+      say(`실험실: 카드 1장을 버리고 금화 2닢.`); break;
+    }
+    case 'smithy': p.gold-=2; p.hand.push(...drawN(3)); t.once.smithy=true; say('대장간: 금화 2닢 → 카드 3장.'); break;
+    case 'museum': {
+      const id = extra.discard!=null?extra.discard: aiWorstCard(p);
+      p.hand.splice(p.hand.indexOf(id),1); p.museum.push(id); t.once.museum=true;
+      say('박물관: 카드 1장을 보관했습니다.'); break;
+    }
+    case 'armory': {
+      const my=p.city.find(c=>c.id==='armory'); removeFromCity(pi,my.u); toDiscard('armory');
+      const c=removeFromCity(a.t.pi,a.t.u); if(c) toDiscard(c.id);
+      say(`병기고를 파괴하고 ${G.P[a.t.pi].name}의 <b>${P0(a.t.id).nm}</b>을(를) 파괴했습니다.`); break;
+    }
+    case 'framework': {
+      const f=p.city.find(c=>c.id==='framework'); removeFromCity(pi,f.u); toDiscard('framework');
+      say('골조를 파괴합니다.');
+      doBuild(pi, a.id, 0, {free:true, dupOK:false}); break;
+    }
+    case 'graveyard': {
+      const c=removeFromCity(pi,a.u); if(c) toDiscard(c.id);
+      say(`<b>${P0(c.id).nm}</b>을(를) 파괴하고 공동묘지를 건설합니다.`);
+      doBuild(pi,'graveyard',0,{free:true}); break;
+    }
+    case 'ab': doAbility(pi,a,extra); break;
+    case 'end': endTurn(); return;
+  }
+  refresh();
+  if(p.isAI && G.turn && !G.turn.ended) setTimeout(aiTurn, 340);
+}
+
+function doAbility(pi,a,extra){
+  const t=G.turn, p=G.P[pi], o=G.P[opp(pi)];
+  t.abilityDone=true;
+  switch(a.ch){
+    case 'assassin': {
+      const st=charState(a.target);
+      if(st) st.killed=true;
+      say(`암살자: <b>${CH[a.target].nm}</b>을(를) 지목했습니다.`);
+      break;
+    }
+    case 'witch': {
+      const st=charState(a.target);
+      if(st) st.bewitched=true;
+      say(`마녀: <b>${CH[a.target].nm}</b>에게 마법을 걸고 차례를 멈춥니다.`);
+      endTurn(); return;
+    }
+    case 'magistrate': {
+      const s1=charState(a.real); if(s1) s1.warrant='real';
+      a.fakes.forEach(f=>{ const s=charState(f); if(s) s.warrant='fake'; });
+      say('치안판사: 캐릭터 3명에게 영장을 붙였습니다.');
+      break;
+    }
+    case 'thief': {
+      const st=charState(a.target); if(st) st.robbedBy=pi;
+      say(`도둑: <b>${CH[a.target].nm}</b>의 금고를 노립니다.`);
+      break;
+    }
+    case 'blackmailer': {
+      const s1=charState(a.real); if(s1) s1.blackmail='real';
+      const s2=charState(a.fake); if(s2) s2.blackmail='fake';
+      say('협박범: 캐릭터 2명에게 협박 카드를 붙였습니다.');
+      break;
+    }
+    case 'spy': {
+      const n=o.hand.filter(id=>P0(id).type===a.type).length;
+      const g=Math.min(n,o.gold); o.gold-=g; p.gold+=g;
+      const c=drawN(n); p.hand.push(...c);
+      say(`첩자: ${TYPE[a.type].nm} 선언 → 상대 손패에 ${n}장. 금화 ${g}닢 + 카드 ${c.length}장.`);
+      if(!p.isAI) toast(`상대 손패: ${o.hand.map(i=>P0(i).nm).join(', ')||'없음'}`);
+      G.spyPeek = {by:pi, hand:o.hand.slice()};
+      break;
+    }
+    case 'magician': {
+      if(a.mode==='swap'){
+        const h=p.hand; p.hand=o.hand; o.hand=h;
+        say(`마술사: 손패를 전부 교환했습니다. (${p.hand.length}장 ↔ ${o.hand.length}장)`);
+      } else {
+        const ids = extra.discards || aiChooseRedraw(p, a.n);
+        ids.forEach(id=>{ p.hand.splice(p.hand.indexOf(id),1); toDiscard(id); });
+        p.hand.push(...drawN(ids.length));
+        say(`마술사: 카드 ${ids.length}장을 버리고 그만큼 새로 받았습니다.`);
+      }
+      break;
+    }
+    case 'wizard': {
+      const i=o.hand.indexOf(a.take);
+      if(i<0) break;
+      o.hand.splice(i,1);
+      if(a.now){
+        p.hand.push(a.take);
+        say(`마법사: 상대에게서 <b>${P0(a.take).nm}</b>을(를) 가져와 즉시 건설합니다.`);
+        doBuild(pi,a.take,0,{dupOK:true});
+      } else {
+        p.hand.push(a.take);
+        say(`마법사: 상대에게서 카드 1장을 가져왔습니다.`);
+      }
+      break;
+    }
+    case 'seer': {
+      if(!o.hand.length){ say('예언자: 상대의 손패가 비어 있습니다.'); break; }
+      const idx=rnd(o.hand.length); const got=o.hand.splice(idx,1)[0];
+      p.hand.push(got);
+      say(`예언자: 상대의 카드 1장(<b>${P0(got).nm}</b>)을 가져왔습니다.`);
+      if(p.isAI){ seerGive(pi, aiWorstCard(p)); break; }
+      refresh(); openSeerGive(pi); return;
+    }
+    case 'abbot': {
+      const rich = (G.P[0].gold>=G.P[1].gold)?0:1;
+      if(rich!==pi && G.P[rich].gold>0){ G.P[rich].gold--; p.gold++; say('수도원장: 최다 금화 보유자에게서 금화 1닢.'); }
+      const n=nType(p,'relig');
+      if(n>0){
+        if(a.want==='gold'){ p.gold+=n; say(`수도원장: 종교 건물 ${n}채 → 금화 ${n}닢.`); }
+        else { p.hand.push(...drawN(n)); say(`수도원장: 종교 건물 ${n}채 → 카드 ${n}장.`); }
+      }
+      break;
+    }
+    case 'navigator': {
+      if(a.mode==='gold'){ p.gold+=4; say('항해사: 금화 4닢.'); }
+      else { p.hand.push(...drawN(4)); say('항해사: 카드 4장.'); }
+      break;
+    }
+    case 'scholar': {
+      const seven=extra.pool||drawN(7);
+      const keep = extra.keep!=null?extra.keep:aiPickDraw(p,seven);
+      p.hand.push(keep);
+      const rest=seven.slice(); rest.splice(rest.indexOf(keep),1);
+      G.deck.push(...rest); shuffle(G.deck);
+      say('학자: 카드 7장 중 1장을 보유하고 나머지를 더미에 섞었습니다.');
+      break;
+    }
+    case 'warlord': {
+      p.gold-=a.t.price;
+      const c=removeFromCity(a.t.pi,a.t.u); if(c) toDiscard(c.id);
+      say(`장군: 금화 ${a.t.price}닢으로 ${G.P[a.t.pi].name}의 <b>${P0(a.t.id).nm}</b>을(를) 파괴했습니다.`);
+      break;
+    }
+    case 'marshal': {
+      p.gold-=a.t.price; G.P[a.t.pi].gold+=a.t.price;
+      const c=removeFromCity(a.t.pi,a.t.u);
+      if(c) p.city.push({u:uidSeq++, id:c.id});
+      say(`육군대장: 금화 ${a.t.price}닢을 주고 <b>${P0(a.t.id).nm}</b>을(를) 점령했습니다.`);
+      if(cityDone(p)&&p.completedAt==null){ p.completedAt=G.round; if(G.firstComplete==null){G.firstComplete=pi; say(`🏰 ${p.name} 도시 완성!`);} }
+      break;
+    }
+    case 'diplomat': {
+      p.gold-=a.pay; G.P[a.t.pi].gold+=a.pay;
+      const theirs=removeFromCity(a.t.pi,a.t.u);
+      const mine=removeFromCity(pi,a.mine);
+      if(theirs) p.city.push({u:uidSeq++,id:theirs.id});
+      if(mine) G.P[a.t.pi].city.push({u:uidSeq++,id:mine.id});
+      say(`외교관: <b>${P0(mine.id).nm}</b> ↔ <b>${P0(theirs.id).nm}</b> 교환 (금화 ${a.pay}닢).`);
+      break;
+    }
+  }
+}
+
+/* ── 극장 ── */
+function askTheater(owner){
+  const o=G.P[opp(owner.idx)];
+  const finish=(myPick)=>{
+    if(myPick==null){ say('극장: 캐릭터를 교환하지 않았습니다.'); beginActionPhase(); return; }
+    const theirPick = o.isAI ? aiTheaterGive(o) : pick(o.chars).id;
+    const mi=owner.chars.findIndex(c=>c.id===myPick);
+    const oi=o.chars.findIndex(c=>c.id===theirPick);
+    const tmp=owner.chars[mi]; owner.chars[mi]=o.chars[oi]; o.chars[oi]=tmp;
+    owner.chars.sort((a,b)=>CH[a.id].rank-CH[b.id].rank);
+    o.chars.sort((a,b)=>CH[a.id].rank-CH[b.id].rank);
+    say(`극장: <b>${CH[myPick].nm}</b> ↔ <b>${CH[theirPick].nm}</b> 교환.`);
+    beginActionPhase();
+  };
+  if(owner.isAI){ finish(aiTheaterUse(owner)); return; }
+  modal('극장 — 캐릭터를 교환할까요?',
+    owner.chars.map(c=>({t:CH[c.id].nm, s:'이 카드를 넘긴다', v:c.id})).concat([{t:'교환하지 않는다', s:'', v:null}]),
+    v=>finish(v));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   9. AI ─ 평가 함수
+   ══════════════════════════════════════════════════════════════ */
+const AI = 1;
+function D(){                       // 현재 수를 두는 쪽의 난이도
+  const pi = G.turn ? G.turn.pi : (G.draft ? G.draft.cur : AI);
+  return (G.P[pi] && G.P[pi].diff) || G.diff;
+}
+function noise(){ const n=D().noise; return n? (Math.random()-0.5)*2*n : 0; }
+
+/* 손패 가치 */
+function handValue(p){
+  let v=0; const seen={};
+  p.hand.forEach(id=>{
+    if(id==='secretvault'){ v+=2.6; return; }
+    let w=1.0;
+    if(hasB(p,id)) w=0.3;                      // 이미 지은 건물 = 거의 쓸모없음
+    seen[id]=(seen[id]||0)+1;
+    if(seen[id]>1) w*=0.35;
+    w += Math.min(P0(id).cost,6)*0.16;         // 비싼 건물 = 점수
+    if(P0(id).type==='uniq') w += 0.55;
+    v+=w;
+  });
+  return v;
+}
+
+/* 예상 최종 점수(근사) */
+function projScore(pi){
+  const p=G.P[pi];
+  let s = sum(p.city, c=>P0(c.id).cost);
+  const kinds=new Set(p.city.map(c=>P0(c.id).type));
+  let k=kinds.size + (hasB(p,'haunted')?1:0);
+  s += (k>=5)?3:(k*0.55);
+  const n=cityCount(p);
+  s += n*1.15;                                  // 도시 진행 템포
+  if(n>=CITY_GOAL) s += (G.firstComplete===pi?4:2);
+  else s += (CITY_GOAL-n<=2 ? 1.8 : 0);
+  if(hasB(p,'dragongate')) s+=2;
+  if(hasB(p,'statue')) s+= (G.crown===pi?4:1.5);
+  if(hasB(p,'basilica')) s+= p.city.filter(c=>P0(c.id).cost%2===1).length;
+  if(hasB(p,'treasury')) s+= p.gold*0.8;
+  if(hasB(p,'maproom')) s+= p.hand.length*0.8;
+  if(hasB(p,'wishingwell')) s+= p.city.filter(c=>P0(c.id).type==='uniq').length;
+  if(hasB(p,'museum')) s+= p.museum.length;
+  if(hasB(p,'capitol')){
+    const cnt={}; p.city.forEach(c=>{const t=P0(c.id).type; cnt[t]=(cnt[t]||0)+1;});
+    if(Object.values(cnt).some(v=>v>=3)) s+=3; else s+=1.2;
+  }
+  if(hasB(p,'ivorytower') && p.city.filter(c=>P0(c.id).type==='uniq').length===1) s+=5;
+  s += p.gold*0.62;
+  s += handValue(p);
+  return s;
+}
+function equity(pi){ return projScore(pi) - projScore(opp(pi)); }
+
+/* ══════════════════════════════════════════════════════════════
+   10. AI ─ 상대 캐릭터 추론
+   ══════════════════════════════════════════════════════════════ */
+function beliefGroups(ai){
+  const h=G.hist[G.hist.length-1]; if(!h) return [];
+  const U=G.chars.slice();
+  const snaps=h.obs[ai]||[];
+  if(!snaps.length) return [];
+  const own=new Set(h.acts.filter(a=>a.pi===ai).map(a=>a.cid));
+  const groups=[];
+  const before=U.filter(c=>!snaps[0].includes(c) && !own.has(c));
+  if(before.length===2) groups.push(before);
+  for(let k=0;k+1<snaps.length;k++){
+    const gone=snaps[k].filter(c=>!snaps[k+1].includes(c) && !own.has(c));
+    if(gone.length===2) groups.push(gone);
+  }
+  const last=snaps[snaps.length-1].filter(c=>!own.has(c));
+  if(last.length===2) groups.push(last);
+  return groups.slice(0,2);
+}
+
+/* 상대가 가진 캐릭터 확률 맵 */
+function oppCharProbs(ai){
+  const P={}; const inf=D().infer;
+  const gs=beliefGroups(ai);
+  const own=new Set(G.P[ai].chars.map(c=>c.id));
+  const rest=G.chars.filter(c=>!own.has(c));
+  // 균등 사전분포
+  rest.forEach(c=>P[c]= 2/rest.length);
+  if(inf>0 && gs.length){
+    const Q={}; G.chars.forEach(c=>Q[c]=0);
+    gs.forEach(g=>g.forEach(c=>Q[c]+=0.5));
+    G.chars.forEach(c=>{ P[c]=(1-inf)*(P[c]||0) + inf*Q[c]; });
+  }
+  return P;
+}
+function sampleOppChars(ai){
+  const gs=beliefGroups(ai);
+  if(gs.length===2 && Math.random()<D().infer) return [pick(gs[0]), pick(gs[1])];
+  const own=new Set(G.P[ai].chars.map(c=>c.id));
+  const rest=shuffle(G.chars.filter(c=>!own.has(c)));
+  return [rest[0], rest[1]];
+}
+
+/* ══════════════════════════════════════════════════════════════
+   11. AI ─ 캐릭터 가치 평가
+   ══════════════════════════════════════════════════════════════ */
+function buildableNow(p, extraGold){
+  const g=p.gold+(extraGold||0);
+  const seen=new Set(); let best=null, cnt=0;
+  p.hand.forEach(id=>{
+    if(id==='secretvault'||seen.has(id)) return; seen.add(id);
+    if(hasB(p,id)&&!hasB(p,'quarry')) return;
+    const c=bcost(p,id);
+    if(c<=g){ cnt++; if(!best||P0(id).cost>P0(best).cost) best=id; }
+  });
+  return {cnt, best};
+}
+
+function charValue(pi, cid, oppP){
+  const p=G.P[pi], o=G.P[opp(pi)];
+  const rank=CH[cid].rank;
+  let v=0;
+  const race = cityCount(o) - cityCount(p);      // 상대가 앞서면 +
+  const late = Math.max(cityCount(p),cityCount(o))>=5;
+
+  // 공통: 순번이 늦을수록 정보/건설 우위, 이를수록 암살 회피
+  switch(cid){
+    case 'assassin':
+      v = 4.2 + (D().infer*2.0) + (late?1.6:0);
+      break;
+    case 'witch':
+      v = 4.0 + (late?1.0:0) + (p.hand.length<2?0.8:0);
+      break;
+    case 'magistrate':
+      v = 3.0 + (o.gold>=5?1.6:0) + (late?1.4:0);
+      break;
+    case 'thief':
+      v = 1.6 + Math.min(o.gold,8)*0.55;
+      break;
+    case 'blackmailer':
+      v = 2.0 + Math.min(o.gold,10)*0.42;
+      break;
+    case 'spy':
+      v = 1.8 + o.hand.length*0.5 + Math.min(o.gold,6)*0.2;
+      break;
+    case 'magician':
+      v = 1.4 + Math.max(0,o.hand.length-p.hand.length)*1.15;
+      break;
+    case 'wizard':
+      v = 2.6 + Math.min(o.hand.length,5)*0.5;
+      break;
+    case 'seer':
+      v = 2.4 + (buildableNow(p).cnt>=2?1.8:0);
+      break;
+    case 'king':
+      v = 2.2 + nType(p,'noble')*1.05 + (G.crown!==pi?2.2:0.8);
+      break;
+    case 'archduke':
+      v = 2.0 + nType(p,'noble')*0.95 + (G.crown!==pi?2.2:0.8);
+      break;
+    case 'bishop':
+      v = 1.5 + nType(p,'relig')*1.05 + (late?2.4:0.6);
+      break;
+    case 'cardinal':
+      v = 1.6 + nType(p,'relig')*0.9 + (p.gold<3&&p.hand.length>2?1.8:0);
+      break;
+    case 'abbot':
+      v = 1.9 + nType(p,'relig')*1.0 + (o.gold>p.gold?0.8:0);
+      break;
+    case 'merchant':
+      v = 2.3 + nType(p,'trade')*1.05;
+      break;
+    case 'alchemist':
+      v = 1.2 + Math.min(buildableNow(p,6).cnt,3)*1.7 + p.gold*0.25;
+      break;
+    case 'trader':
+      v = 1.4 + nType(p,'trade')*1.0 + p.hand.filter(x=>P0(x).type==='trade').length*1.1;
+      break;
+    case 'architect':
+      v = 3.0 + Math.min(p.gold,12)*0.42 + (p.hand.length>=3?1.6:0);
+      break;
+    case 'navigator':
+      v = 3.4 - (buildableNow(p).cnt?1.0:0);
+      break;
+    case 'scholar':
+      v = 3.0 + (p.hand.length<3?1.2:0);
+      break;
+    case 'warlord':
+      v = 1.4 + nType(p,'milit')*1.0 + destroyGain(pi)*0.85;
+      break;
+    case 'marshal':
+      v = 1.4 + nType(p,'milit')*0.95 + seizeGain(pi)*0.9;
+      break;
+    case 'diplomat':
+      v = 1.4 + nType(p,'milit')*0.95 + swapGain(pi)*0.8;
+      break;
+  }
+  // 상대가 암살자/마녀를 가졌을 확률 → 이른 순번 리스크
+  if(oppP){
+    const risk = (oppP['assassin']||0)+(oppP['witch']||0);
+    if(rank>=2) v -= risk*1.5*(1/(1+rank*0.12));
+    const rob=(oppP['thief']||0);
+    if(rank>=3) v -= rob*Math.min(p.gold,8)*0.16;
+  }
+  // 도시 완성 임박 → 건설력 캐릭터 가중
+  if(CITY_GOAL-cityCount(p)<=2 && ['architect','seer','scholar','trader','alchemist'].includes(cid)) v+=2.2;
+  if(race>=2 && ['warlord','marshal','assassin','witch'].includes(cid)) v+=1.6;
+  return v;
+}
+
+function destroyGain(pi){
+  const ts=r8Targets(pi,'destroy').filter(x=>x.pi!==pi);
+  if(!ts.length) return 0;
+  let best=0;
+  ts.forEach(x=>{ const g=P0(x.id).cost - x.price*0.55 + (P0(x.id).type==='uniq'?1.2:0);
+    if(x.price<=G.P[pi].gold+3 && g>best) best=g; });
+  return best;
+}
+function seizeGain(pi){
+  const ts=r8Targets(pi,'seize').filter(x=>x.pi!==pi);
+  if(!ts.length) return 0;
+  let best=0;
+  ts.forEach(x=>{ const g=P0(x.id).cost*1.6 - x.price*0.5; if(g>best) best=g; });
+  return best;
+}
+function swapGain(pi){
+  const ts=r8Targets(pi,'swap').filter(x=>x.pi!==pi);
+  const p=G.P[pi]; if(!ts.length||!p.city.length) return 0;
+  let best=0;
+  ts.forEach(x=>p.city.forEach(m=>{
+    const g=(x.base-P0(m.id).cost)*1.3 - x.extra*0.5; if(g>best) best=g; }));
+  return best;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   12. AI ─ 드래프트
+   ══════════════════════════════════════════════════════════════ */
+/* 이 캐릭터를 들었을 때 상대 조합으로부터 받을 기대 피해 */
+function threatPenalty(pi, cid, pair){
+  const p=G.P[pi]; const rank=CH[cid].rank;
+  let pen=0;
+  const val=charValue(pi,cid,null);
+  if(pair.includes('assassin')||pair.includes('witch')){
+    if(rank>=2) pen += clamp(val/9,0,1)*4.0;      // 눈에 띄는 캐릭터일수록 위험
+  }
+  if(pair.includes('thief') && rank>=3) pen += Math.min(p.gold,8)*0.30;
+  if(pair.includes('blackmailer') && rank>=3) pen += Math.min(p.gold,10)*0.20;
+  if(pair.includes('magistrate') && rank>=2) pen += 1.1;
+  if(pair.some(x=>['warlord','marshal','diplomat'].includes(x))){
+    if(cid==='bishop') pen -= 3.0;                 // 주교는 오히려 이득
+    else if(rank<8) pen += p.city.length*0.16;
+  }
+  return pen;
+}
+
+function aiDraftKeep(pi, pool){
+  const oppP=oppCharProbs(pi);
+  let best=null, bv=-1e9;
+  const sims=D().sim;
+  pool.forEach(c=>{
+    let v=charValue(pi,c,oppP);
+    // 이미 가진 카드와의 시너지/중복 순번 회피
+    const mine=G.P[pi].chars.map(x=>x.id);
+    if(mine.length){
+      const gap=Math.abs(CH[c].rank - CH[mine[0]].rank);
+      v += gap>=3?0.7:(gap===1?-0.35:0);
+      if(['assassin','witch'].includes(mine[0]) && ['warlord','marshal'].includes(c)) v+=0.8;
+    }
+    v += charValue(opp(pi),c,null)*0.22;          // 상대에게 넘기면 아까운 카드
+    // 최상급 이상: 상대 캐릭터 조합을 표본으로 뽑아 피격 위험을 계산
+    if(sims>0){
+      const n=Math.min(sims,90); let pen=0;
+      for(let i=0;i<n;i++) pen += threatPenalty(pi,c,sampleOppChars(pi));
+      v -= pen/n;
+    }
+    v += noise();
+    if(v>bv){ bv=v; best=c; }
+  });
+  if(Math.random()<D().blunder) best=pick(pool);
+  return best;
+}
+
+function aiDraftDiscard(pi, pool){
+  // 상대에게 가장 위협적인 카드를 버린다
+  let best=null, bv=-1e9;
+  pool.forEach(c=>{
+    let v = charValue(opp(pi), c, null);         // 상대 입장 가치
+    v -= charValue(pi, c, null)*0.35;            // 내가 나중에 쓸 수도 있음
+    v += noise();
+    if(v>bv){ bv=v; best=c; }
+  });
+  if(Math.random()<D().blunder) best=pick(pool);
+  return best;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   13. AI ─ 차례 진행
+   ══════════════════════════════════════════════════════════════ */
+function aiWorstCard(p){
+  let worst=p.hand[0], wv=1e9;
+  const cnt={};
+  p.hand.forEach(id=>{
+    let v=P0(id).cost*0.5 + (P0(id).type==='uniq'?1.5:0);
+    if(hasB(p,id)) v-=3;
+    cnt[id]=(cnt[id]||0)+1; if(cnt[id]>1) v-=1.5;
+    if(id==='secretvault') v+=5;
+    if(bcost(p,id)>p.gold+4) v-=0.8;
+    if(v<wv){ wv=v; worst=id; }
+  });
+  return worst;
+}
+function aiPickDraw(p,cards){
+  let best=cards[0], bv=-1e9;
+  cards.forEach(id=>{
+    let v=P0(id).cost*0.55;
+    if(P0(id).type==='uniq') v+=1.8;
+    if(hasB(p,id)) v-=4;
+    if(p.hand.includes(id)) v-=1.6;
+    if(id==='secretvault') v+=2.2;
+    if(bcost(p,id)<=p.gold+2) v+=1.2;
+    const kinds=new Set(p.city.map(c=>P0(c.id).type));
+    if(!kinds.has(P0(id).type)) v+=1.1;
+    v+=noise()*0.4;
+    if(v>bv){ bv=v; best=id; }
+  });
+  return best;
+}
+function aiChooseRedraw(p,n){
+  const sorted=p.hand.slice().sort((a,b)=>{
+    const va=P0(a).cost*0.5-(hasB(p,a)?4:0), vb=P0(b).cost*0.5-(hasB(p,b)?4:0);
+    return va-vb;
+  });
+  return sorted.slice(0,n);
+}
+function aiDecideBribe(p, st, bribe){
+  // 진짜/가짜 확률 50%. 뇌물 = gold/2, 거절 시 기대손실 = gold*0.5
+  if(p.gold<=1) return false;
+  const risk = p.gold*0.5;
+  return bribe < risk*0.95 ? true : (Math.random()<0.45);
+}
+function aiTheaterUse(p){
+  // 순번이 이른 캐릭터를 넘기고 늦은 캐릭터를 노린다 (상대는 무작위로 줄 것)
+  if(Math.random()>0.5) return null;
+  const worst=p.chars.slice().sort((a,b)=>charValue(p.idx,a.id,null)-charValue(p.idx,b.id,null))[0];
+  return worst?worst.id:null;
+}
+function aiTheaterGive(p){
+  const worst=p.chars.slice().sort((a,b)=>charValue(p.idx,a.id,null)-charValue(p.idx,b.id,null))[0];
+  return worst.id;
+}
+
+/* 행동 하나를 고른다 */
+function aiTurn(){
+  if(!G.turn || G.turn.pi!==AI || G.turn.ended || G.ended) return;
+  const pi=AI, p=G.P[pi];
+  const acts=genActions(pi);
+  if(!acts.length){ endTurn(); return; }
+  if(!G.turn.gathered){
+    applyAction(pi, aiGather(pi)); return;
+  }
+  let best=null, bv=-1e9;
+  acts.forEach(a=>{
+    let v=scoreAction(pi,a)+noise()*0.55;
+    if(v>bv){ bv=v; best=a; }
+  });
+  if(Math.random()<D().blunder){
+    const alt=acts.filter(a=>a.k!=='end'); if(alt.length) best=pick(alt);
+  }
+  applyAction(pi,best);
+}
+
+function aiGather(pi){
+  const p=G.P[pi];
+  const b=buildableNow(p);
+  const cid=activeChar();
+  let vGold = 2*0.95 + (hasB(p,'goldmine')?0.95:0);
+  let vCard = 1.35;
+  if(hasB(p,'observatory')) vCard+=0.35;
+  if(hasB(p,'library')) vCard+=1.15;
+  if(!p.hand.length) vCard+=3.2;
+  else if(p.hand.length===1) vCard+=1.2;
+  if(p.hand.filter(id=>!hasB(p,id)&&id!=='secretvault').length===0) vCard+=3.0;
+  // 지을 수 있는데 금화가 모자란가?
+  let cheapest=99;
+  p.hand.forEach(id=>{ if(!hasB(p,id)&&id!=='secretvault') cheapest=Math.min(cheapest,bcost(p,id)); });
+  if(cheapest<99 && p.gold<cheapest) vGold += (cheapest-p.gold>=2?2.2:1.4);
+  if(cid==='architect'&&p.gold<6) vGold+=1.6;
+  if(cid==='navigator') vCard-=0.6;
+  if(p.gold>=8) vGold-=1.6;
+  if(p.hand.length>=6) vCard-=1.4;
+  vGold+=noise()*0.5; vCard+=noise()*0.5;
+  return {k: vGold>=vCard?'gold':'cards'};
+}
+
+function scoreAction(pi,a){
+  const p=G.P[pi], o=G.P[opp(pi)], t=G.turn;
+  switch(a.k){
+    case 'end': return 0;
+    case 'build': {
+      const id=a.id, cost=bcost(p,id)-(a.cards||0);
+      let v = P0(id).cost*1.05 + 1.4;             // 건물 자체 점수 + 도시 진행
+      const kinds=new Set(p.city.map(c=>P0(c.id).type));
+      if(!kinds.has(P0(id).type)) v+= (kinds.size===4?3.4:1.3);
+      v -= cost*0.62;
+      if(a.cards) v -= a.cards*0.9;
+      v += uniqBonusValue(p,id);
+      if(cityCount(p)+1>=CITY_GOAL) v += (G.firstComplete==null?7:4);
+      if(activeChar()==='alchemist') v += cost*0.62;   // 어차피 환급
+      if(t && t.st && t.st.warrant) v -= 2.2;          // 영장 위험
+      return v;
+    }
+    case 'lab': return p.hand.length>2? 1.5 : (p.gold<2?1.0:-0.4);
+    case 'smithy': return p.hand.length<=2? 2.2 : 0.5;
+    case 'museum': return 1.1;
+    case 'armory': {
+      if(a.t.pi===pi) return -99;
+      return P0(a.t.id).cost*1.1 - 3.2;
+    }
+    case 'framework': return P0(a.id).cost*1.05 + 1.2 - 3.0;
+    case 'graveyard': {
+      const lost=P0(G.P[pi].city.find(c=>c.u===a.u).id).cost;
+      return 5 - lost*1.05;
+    }
+    case 'ab': return scoreAbility(pi,a);
+  }
+  return 0;
+}
+
+function uniqBonusValue(p,id){
+  switch(id){
+    case 'dragongate': return 2.2;
+    case 'statue': return G.crown===p.idx?3.5:1.5;
+    case 'treasury': return p.gold*0.5+1;
+    case 'maproom': return p.hand.length*0.55+1;
+    case 'wishingwell': return p.city.filter(c=>P0(c.id).type==='uniq').length*1.0+1;
+    case 'basilica': return p.city.filter(c=>P0(c.id).cost%2===1).length*0.9+1;
+    case 'observatory': case 'library': case 'goldmine': case 'smithy':
+    case 'laboratory': case 'poorhouse': case 'park': return 1.6;
+    case 'keep': case 'greatwall': return 1.8;
+    case 'factory': return 1.5;
+    case 'monument': return 2.5;
+    case 'capitol': return 2.0;
+    case 'ivorytower': return p.city.filter(c=>P0(c.id).type==='uniq').length===0?4.0:-1.5;
+    case 'museum': return 2.0;
+    case 'quarry': return 1.2;
+    case 'haunted': return 2.4;
+    case 'magicschool': return 1.4;
+  }
+  return 0.6;
+}
+
+function scoreAbility(pi,a){
+  const p=G.P[pi], o=G.P[opp(pi)];
+  const oppP=oppCharProbs(pi);
+  switch(a.ch){
+    case 'assassin': case 'witch': {
+      let v = (oppP[a.target]||0) * (charValue(opp(pi),a.target,null)*1.25 + 3.0);
+      if(a.ch==='witch') v = (oppP[a.target]||0) * (charValue(pi,a.target,null)*1.4 + 4.5);
+      return 3 + v;
+    }
+    case 'magistrate': {
+      let v=(oppP[a.real]||0)*4.5;
+      a.fakes.forEach(f=>v+=(oppP[f]||0)*0.8);
+      return 2+v;
+    }
+    case 'thief': return 2 + (oppP[a.target]||0)*Math.min(o.gold+3,10)*0.8;
+    case 'blackmailer': return 2 + (oppP[a.real]||0)*Math.min(o.gold,10)*0.7 + (oppP[a.fake]||0)*1.2;
+    case 'spy': {
+      const known = G.spyPeek && G.spyPeek.by===pi ? G.spyPeek.hand : null;
+      const n = known? known.filter(id=>P0(id).type===a.type).length
+                     : o.hand.length* (a.type==='trade'?0.28:a.type==='uniq'?0.3:0.2);
+      return 1 + n*1.5;
+    }
+    case 'magician': {
+      if(a.mode==='swap') return (o.hand.length - p.hand.length)*1.35;
+      const dead=p.hand.filter(id=>hasB(p,id)||id==='secretvault'&&false).length;
+      return a.n===0? -0.5 : (a.n<=dead? a.n*1.15 : dead*1.15 - (a.n-dead)*0.7);
+    }
+    case 'wizard': {
+      let v=2.4+P0(a.take).cost*0.4;
+      if(a.now){ v += 2.0 + P0(a.take).cost*0.8 - bcost(p,a.take)*0.62; }
+      if(P0(a.take).type==='uniq') v+=1.2;
+      if(hasB(p,a.take)&&!a.now) v-=3;
+      return v;
+    }
+    case 'seer': return 2.0;
+    case 'abbot': {
+      const n=nType(p,'relig');
+      return 1 + (a.want==='gold'? n*0.95 : n*1.1 + (p.hand.length<3?1.2:0));
+    }
+    case 'navigator': {
+      return a.mode==='gold'? 4*0.95 : (4*1.3 + (p.hand.length<2?1.5:0));
+    }
+    case 'scholar': return 3.5;
+    case 'warlord': {
+      if(a.t.pi===pi) return -99;
+      return P0(a.t.id).cost*1.15 + (P0(a.t.id).type==='uniq'?1.5:0)
+             - a.t.price*0.75
+             + (cityCount(o)>=CITY_GOAL-1? 6:0);
+    }
+    case 'marshal': {
+      return P0(a.t.id).cost*1.9 - a.t.price*0.55 + 1.2
+             + (cityCount(p)+1>=CITY_GOAL? 6:0);
+    }
+    case 'diplomat': {
+      const mine=P0(G.P[pi].city.find(c=>c.u===a.mine).id);
+      return (P0(a.t.id).cost - mine.cost)*1.5 - a.pay*0.6;
+    }
+  }
+  return 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   14. UI ─ 공용 위젯
+   ══════════════════════════════════════════════════════════════ */
+function toast(msg,ms){
+  const n=el('div','toast',msg); document.body.appendChild(n);
+  setTimeout(()=>n.remove(), ms||2400);
+}
+function closeModal(){ $('#modal').classList.remove('on'); }
+function modalRaw(title, bodyNode, footBtns){
+  $('#mtitle').textContent=title;
+  const b=$('#mbody'); b.innerHTML=''; if(bodyNode) b.appendChild(bodyNode);
+  const f=$('#mfoot'); f.innerHTML='';
+  (footBtns||[]).forEach(x=>{
+    const btn=el('button','btn '+(x.cls||'ghost')+' grow',x.t);
+    btn.onclick=()=>{ if(x.keep!==true) closeModal(); x.fn&&x.fn(); };
+    f.appendChild(btn);
+  });
+  $('#modal').classList.add('on');
+}
+function modal(title, opts, cb, footBtns){
+  const wrap=el('div','optlist');
+  opts.forEach(o=>{
+    const b=el('button','opt'+(o.dis?' dis':''));
+    b.appendChild(el('span',null,o.t));
+    if(o.s) b.appendChild(el('span','sub',o.s));
+    b.onclick=()=>{ closeModal(); cb(o.v); };
+    wrap.appendChild(b);
+  });
+  modalRaw(title, wrap, footBtns);
+}
+
+function cardNode(id, opts){
+  opts=opts||{};
+  const pr=P0(id);
+  const c=el('div','card '+TYPE[pr.type].cls+(opts.mini?' mini':'')+(opts.sel?' sel':'')+(opts.dis?' dis':''));
+  if(pr.cost>0||pr.type!=='uniq') c.appendChild(el('div','cost',String(pr.cost)));
+  else c.appendChild(el('div','cost','–'));
+  c.appendChild(el('div','nm',pr.nm));
+  c.appendChild(el('div','tp',TYPE[pr.type].nm));
+  if(pr.tx) c.appendChild(el('div','tx',pr.tx));
+  if(opts.badge) c.appendChild(el('div','badge',opts.badge));
+  if(opts.onclick) c.onclick=opts.onclick;
+  return c;
+}
+function charNode(cid, opts){
+  opts=opts||{};
+  const ch=CH[cid];
+  const c=el('div','chcard'+(opts.sel?' sel':'')+(opts.dis?' dis':''));
+  const hd=el('div','hd'); hd.appendChild(el('div','rk',String(ch.rank)));
+  hd.appendChild(el('div','nm',ch.nm)); c.appendChild(hd);
+  c.appendChild(el('div','ab',ch.ab));
+  if(opts.onclick) c.onclick=opts.onclick;
+  return c;
+}
+function dchip(cid, opts){
+  opts=opts||{};
+  const pr=P0(cid);
+  const d=el('div','dchip '+TYPE[pr.type].cls+(opts.sel?' sel':'')+(opts.dis?' dis':''));
+  d.appendChild(el('span','c',String(pr.cost)));
+  d.appendChild(el('span',null,pr.nm));
+  if(opts.onclick) d.onclick=opts.onclick;
+  return d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   15. UI ─ 메인 렌더
+   ══════════════════════════════════════════════════════════════ */
+let uiSel = null;   // 선택 중인 손패 카드
+
+function refresh(){ try{ render(); }catch(e){ console.error(e); } }
+
+function render(){
+  if(!G) return;
+  $('#rndLbl').textContent = G.phase==='over' ? '게임 종료' : `R${G.round}`;
+  const main=$('#main'); main.innerHTML='';
+  main.appendChild(seatNode(1));
+  if(G.phase==='draft') main.appendChild(draftNode());
+  main.appendChild(seatNode(0));
+  renderPanel();
+}
+
+function seatNode(pi){
+  const p=G.P[pi];
+  const s=el('div','seat'+(pi===0?' me':''));
+  const hd=el('div','hd');
+  hd.appendChild(el('span','nm', p.name + (p.isAI?` (${G.diff.em})`:'')));
+  if(G.crown===pi) hd.appendChild(el('span','crown','♛'));
+  const st=el('div','stats');
+  const g=el('span','coin',String(p.gold)); st.appendChild(g);
+  const h=el('span','cnt',String(p.hand.length)); st.appendChild(h);
+  st.appendChild(el('span','tiny muted',`도시 ${cityCount(p)}/${CITY_GOAL}`));
+  hd.appendChild(st);
+  s.appendChild(hd);
+
+  // 캐릭터 태그
+  if(p.chars.length){
+    const row=el('div','row wrap'); row.style.marginTop='5px';
+    p.chars.forEach(c=>{
+      const known = (pi===0) || G.phase==='over' || wasRevealed(c.id);
+      const act = G.turn && G.turn.pi===pi && (G.turn.hijack||G.turn.cid)===c.id;
+      const tag=el('div','chartag'+(act?' act':'')+(c.killed?' dead':''),
+        known? `${CH[c.id].rank}. ${CH[c.id].nm}` : '???');
+      row.appendChild(tag);
+    });
+    s.appendChild(row);
+  }
+  // 도시
+  const city=el('div','city');
+  p.city.forEach(c=>{
+    const o={};
+    if(uiTargeting && uiTargeting.kind==='city'){
+      const ok=uiTargeting.list.some(x=>x.pi===pi&&x.u===c.u);
+      if(ok) o.onclick=()=>{ if(uiTargeting && uiTargeting.kind==='city') uiTargeting.pick({pi,u:c.u,id:c.id}); };
+      else o.dis=true;
+    }
+    city.appendChild(dchip(c.id,o));
+  });
+  if(p.museum.length) city.appendChild(el('div','dchip t-uniq','박물관 '+p.museum.length+'장'));
+  s.appendChild(city);
+  return s;
+}
+function wasRevealed(cid){
+  // 이미 호명이 지난 캐릭터는 공개된 것으로 처리
+  const i=G.chars.indexOf(cid);
+  return G.phase==='action' && i>=0 && i < G.rankIdx;
+}
+
+/* ── 드래프트 ── */
+function draftNode(){
+  const d=G.draft, box=el('div','seat');
+  const mine = d.cur===0;
+  const t = d.stage===0 ? '가질 캐릭터 1장을 고르세요'
+          : (d.sub==='keep' ? '가질 캐릭터 1장' : '뒷면으로 버릴 캐릭터 1장');
+  const hd=el('div','hd');
+  hd.appendChild(el('span','nm', mine? t : `${G.P[1].name} 선택 중…`));
+  box.appendChild(hd);
+  const row=el('div','hrow');
+  d.pool.forEach(cid=>{
+    row.appendChild(charNode(cid,{
+      onclick: mine? ()=>{ d.sub==='discard'? draftPickDiscard(cid) : draftPickKeep(cid); } : null,
+      dis: !mine
+    }));
+  });
+  box.appendChild(row);
+  box.appendChild(el('div','tiny muted', `남은 카드 ${d.pool.length}장 · 상대에게 넘어갈 카드도 함께 보고 있습니다`));
+  return box;
+}
+
+function driveDraft(){
+  refresh();
+  const d=G.draft; if(!d) return;
+  if(G.P[d.cur].isAI){
+    setTimeout(()=>{
+      if(!G.draft) return;
+      const cid = (d.sub==='discard') ? aiDraftDiscard(1,d.pool) : aiDraftKeep(1,d.pool);
+      if(d.sub==='discard') draftPickDiscard(cid); else draftPickKeep(cid);
+    }, 480);
+  }
+}
+
+/* ── 하단 패널 ── */
+let uiTargeting = null;
+
+function renderPanel(){
+  const pr=$('#prompt'), ac=$('#acts'), hd=$('#hand');
+  pr.innerHTML=''; ac.innerHTML=''; hd.innerHTML='';
+  if(G.phase==='over'){
+    pr.appendChild(el('span',null,'게임이 끝났습니다.'));
+    const b=el('button','btn primary','결과 보기'); b.onclick=showResult; ac.appendChild(b);
+    return;
+  }
+  if(uiTargeting){
+    pr.appendChild(el('span','dot'));
+    pr.appendChild(el('span',null,uiTargeting.msg));
+    const b=el('button','btn ghost sm','취소'); b.onclick=()=>{uiTargeting=null;refresh();}; ac.appendChild(b);
+    renderHand(); return;
+  }
+  if(G.phase==='draft'){
+    pr.appendChild(el('span','dot'));
+    pr.appendChild(el('span',null, G.draft.cur===0? '캐릭터를 고르세요' : '상대가 캐릭터를 고르는 중…'));
+    renderHand(); return;
+  }
+  const t=G.turn;
+  if(!t){ pr.appendChild(el('span',null,'…')); renderHand(); return; }
+  if(t.pi!==0){
+    pr.appendChild(el('span','dot'));
+    pr.appendChild(el('span',null,`${CH[t.hijack||t.cid].nm} — ${G.P[1].name}의 차례`));
+    renderHand(); return;
+  }
+  // 내 차례
+  const cid=activeChar();
+  pr.appendChild(el('span',null,`${CH[cid].rank}. ${CH[cid].nm} — 내 차례`));
+  if(t.st && t.st.warrant) pr.appendChild(el('span','tiny muted','· 영장?'));
+  if(!t.gathered){
+    ac.appendChild(btn('금화 2닢'+(hasB(G.P[0],'goldmine')?' +1':''),'primary',()=>applyAction(0,{k:'gold'})));
+    ac.appendChild(btn('카드 뽑기','primary',()=>applyAction(0,{k:'cards'})));
+    renderHand(); return;
+  }
+  if(canUseAbility()) ac.appendChild(btn('능력 사용','primary',openAbility));
+  const p=G.P[0];
+  if(hasB(p,'laboratory')&&!t.once.laboratory&&p.hand.length) ac.appendChild(btn('실험실','',()=>pickHandCard('버릴 카드',id=>applyAction(0,{k:'lab'},{discard:id}))));
+  if(hasB(p,'smithy')&&!t.once.smithy&&p.gold>=2) ac.appendChild(btn('대장간','',()=>applyAction(0,{k:'smithy'})));
+  if(hasB(p,'museum')&&!t.once.museum&&p.hand.length) ac.appendChild(btn('박물관','',()=>pickHandCard('보관할 카드',id=>applyAction(0,{k:'museum'},{discard:id}))));
+  if(hasB(p,'armory')) ac.appendChild(btn('병기고','danger',openArmory));
+  if(hasB(p,'framework')&&p.hand.length) ac.appendChild(btn('골조 해체','',openFramework));
+  if(p.hand.includes('graveyard')&&!hasB(p,'graveyard')&&p.city.length) ac.appendChild(btn('공동묘지','',openGraveyard));
+  ac.appendChild(btn('차례 종료','ghost',()=>{ uiSel=null; endTurn(); }));
+  renderHand();
+}
+function btn(t,cls,fn){ const b=el('button','btn sm '+(cls||''),t); b.onclick=fn; return b; }
+
+function renderHand(){
+  const hd=$('#hand'), p=G.P[0];
+  if(!p.hand.length){ hd.appendChild(el('div','tiny muted','손패가 없습니다')); return; }
+  const order=p.hand.map((id,i)=>({id,i}));
+  order.forEach(({id,i})=>{
+    const t=G.turn;
+    const my = t && t.pi===0 && t.gathered && !uiTargeting;
+    const why = my? canBuild(0,id) : '차례가 아닙니다';
+    const node=cardNode(id,{
+      dis: !!why,
+      badge: (my&&!why)? '건설' : null,
+      onclick: ()=>{
+        if(my&&!why) confirmBuild(id);
+        else showCardInfo(id, why);
+      }
+    });
+    hd.appendChild(node);
+  });
+}
+
+function showCardInfo(id, why){
+  const pr=P0(id);
+  const box=el('div'); box.appendChild(cardNode(id,{}));
+  box.style.display='flex'; box.style.justifyContent='center';
+  modalRaw(pr.nm, box, [{t:'닫기'}]);
+  if(why) $('#mbody').appendChild(el('div','tiny muted center',why));
+}
+
+function confirmBuild(id){
+  const p=G.P[0]; const cost=bcost(p,id);
+  let cards=0;
+  if(id==='thievesden' && p.gold<cost) cards=Math.min(cost-p.gold, p.hand.length-1);
+  const info = cards? `금화 ${cost-cards}닢 + 카드 ${cards}장` : `금화 ${cost}닢`;
+  modal(`${P0(id).nm} 건설`, [
+    {t:'건설한다', s:info, v:1},
+    {t:'취소', s:'', v:0},
+  ], v=>{ if(v) applyAction(0,{k:'build',id,cards}); });
+}
+
+function pickHandCard(title, cb, filter){
+  const p=G.P[0];
+  const row=el('div','hrow');
+  const seen=new Set();
+  p.hand.forEach(id=>{
+    if(filter&&!filter(id)) return;
+    row.appendChild(cardNode(id,{mini:true,onclick:()=>{closeModal();cb(id);}}));
+  });
+  modalRaw(title,row,[{t:'취소'}]);
+}
+
+function chooseDrawUI(cards){
+  const row=el('div','hrow');
+  cards.forEach(id=>row.appendChild(cardNode(id,{onclick:()=>{closeModal();gatherCardsPick(cards,id);}})));
+  modalRaw(`카드 ${cards.length}장 중 1장을 보유`, row, []);
+}
+
+function targetCity(msg, list, cb){
+  uiTargeting={kind:'city', msg, list, pick:(x)=>{uiTargeting=null; cb(x); refresh();}};
+  refresh();
+}
+
+/* ── 특수 건물 UI ── */
+function openArmory(){
+  const my=G.P[0].city.find(c=>c.id==='armory');
+  targetCity('병기고를 부숴 파괴할 건물을 선택', anyCity(my.u), x=>applyAction(0,{k:'armory',t:x}));
+}
+function openFramework(){
+  const p=G.P[0];
+  const opts=p.hand.filter(id=>id!=='secretvault'&&!canBuild(0,id,{free:true}));
+  if(!opts.length){ toast('무료로 지을 수 있는 카드가 없습니다'); return; }
+  const row=el('div','hrow');
+  opts.forEach(id=>row.appendChild(cardNode(id,{mini:true,onclick:()=>{closeModal();applyAction(0,{k:'framework',id});}})));
+  modalRaw('골조를 부수고 무료로 지을 건물', row, [{t:'취소'}]);
+}
+function openGraveyard(){
+  targetCity('공동묘지를 위해 부술 내 건물 선택',
+    G.P[0].city.map(c=>({pi:0,u:c.u,id:c.id})),
+    x=>applyAction(0,{k:'graveyard',u:x.u}));
+}
+
+/* ── 캐릭터 능력 UI ── */
+function openAbility(){
+  const cid=activeChar(), p=G.P[0], o=G.P[1];
+  const chList=(min)=>targetChars(min).map(c=>({t:`${CH[c].rank}. ${CH[c].nm}`, s:CH[c].ab.slice(0,18)+'…', v:c}));
+  switch(cid){
+    case 'assassin':
+      modal('암살할 캐릭터', chList(2), v=>applyAction(0,{k:'ab',ch:'assassin',target:v})); break;
+    case 'witch':
+      modal('마법을 걸 캐릭터 (차례가 끝납니다)', chList(2), v=>applyAction(0,{k:'ab',ch:'witch',target:v})); break;
+    case 'magistrate': {
+      const chosen=[];
+      const step=()=>{
+        const rem=targetChars(2).filter(c=>!chosen.includes(c));
+        const title = chosen.length===0? '진짜 영장을 붙일 캐릭터' : `가짜 영장 (${chosen.length}/3)`;
+        modal(title, rem.map(c=>({t:`${CH[c].rank}. ${CH[c].nm}`,v:c})), v=>{
+          chosen.push(v);
+          if(chosen.length<3) step();
+          else applyAction(0,{k:'ab',ch:'magistrate',real:chosen[0],fakes:[chosen[1],chosen[2]]});
+        });
+      }; step(); break;
+    }
+    case 'thief': {
+      const list=targetChars(3).filter(c=>{const s=charState(c); return !(s&&(s.killed||s.bewitched));});
+      modal('금화를 훔칠 캐릭터', list.map(c=>({t:`${CH[c].rank}. ${CH[c].nm}`,v:c})),
+        v=>applyAction(0,{k:'ab',ch:'thief',target:v})); break;
+    }
+    case 'blackmailer': {
+      const chosen=[];
+      const step=()=>{
+        const rem=targetChars(3).filter(c=>!chosen.includes(c));
+        modal(chosen.length===0?'진짜 협박을 붙일 캐릭터':'가짜 협박을 붙일 캐릭터',
+          rem.map(c=>({t:`${CH[c].rank}. ${CH[c].nm}`,v:c})), v=>{
+            chosen.push(v);
+            if(chosen.length<2) step();
+            else applyAction(0,{k:'ab',ch:'blackmailer',real:chosen[0],fake:chosen[1]});
+          });
+      }; step(); break;
+    }
+    case 'spy':
+      modal('선언할 건물 종류', TYPES5.map(t=>({t:TYPE[t].nm, v:t})),
+        v=>applyAction(0,{k:'ab',ch:'spy',type:v})); break;
+    case 'magician':
+      modal('마술사', [
+        {t:'상대와 손패 전부 교환', s:`${p.hand.length}장 ↔ ${o.hand.length}장`, v:'swap'},
+        {t:'카드를 버리고 새로 받기', s:'원하는 만큼', v:'redraw', dis:!p.hand.length},
+      ], v=>{
+        if(v==='swap'){ applyAction(0,{k:'ab',ch:'magician',mode:'swap'}); return; }
+        const sel=[];
+        const row=el('div','hrow');
+        p.hand.forEach((id,i)=>{
+          const n=cardNode(id,{mini:true});
+          n.onclick=()=>{ const k=sel.indexOf(i); if(k>=0){sel.splice(k,1);n.classList.remove('sel');} else {sel.push(i);n.classList.add('sel');} };
+          row.appendChild(n);
+        });
+        modalRaw('버릴 카드를 고르세요', row, [
+          {t:'확정', cls:'primary', fn:()=>{
+            const ids=sel.map(i=>p.hand[i]);
+            applyAction(0,{k:'ab',ch:'magician',mode:'redraw',n:ids.length},{discards:ids});
+          }},
+          {t:'취소'},
+        ]);
+      }); break;
+    case 'wizard': {
+      if(!o.hand.length){ toast('상대의 손패가 비어 있습니다'); return; }
+      const row=el('div','hrow');
+      o.hand.forEach(id=>row.appendChild(cardNode(id,{mini:true,onclick:()=>{
+        closeModal();
+        const cost=bcost(p,id);
+        const can = cost<=p.gold && id!=='secretvault';
+        modal(P0(id).nm,[
+          {t:'즉시 건설', s:`금화 ${cost}닢`, v:'now', dis:!can},
+          {t:'손에 든다', s:'', v:'hand'},
+        ], v=>applyAction(0,{k:'ab',ch:'wizard',take:id,now:v==='now'}));
+      }})));
+      modalRaw('상대의 손패 — 1장을 가져옵니다', row, [{t:'취소'}]); break;
+    }
+    case 'seer':
+      applyAction(0,{k:'ab',ch:'seer'}); break;
+    case 'abbot':
+      modal('수도원장 — 종교 건물 수입', [
+        {t:`금화 ${nType(p,'relig')}닢`, v:'gold'},
+        {t:`카드 ${nType(p,'relig')}장`, v:'cards'},
+      ], v=>applyAction(0,{k:'ab',ch:'abbot',want:v})); break;
+    case 'navigator':
+      modal('항해사 — 추가 자원', [
+        {t:'금화 4닢', v:'gold'},{t:'카드 4장', v:'cards'},
+      ], v=>applyAction(0,{k:'ab',ch:'navigator',mode:v})); break;
+    case 'scholar': {
+      const pool=drawN(7);
+      const row=el('div','hrow');
+      pool.forEach(id=>row.appendChild(cardNode(id,{mini:true,onclick:()=>{
+        closeModal(); applyAction(0,{k:'ab',ch:'scholar'},{pool,keep:id});
+      }})));
+      modalRaw('7장 중 1장을 보유', row, []); break;
+    }
+    case 'warlord': {
+      const ts=r8Targets(0,'destroy').filter(x=>x.price<=p.gold);
+      if(!ts.length){ toast('파괴할 수 있는 건물이 없습니다'); return; }
+      targetCity('파괴할 건물을 선택 (비용 = 건설비 −1)', ts, x=>{
+        const tt=ts.find(y=>y.u===x.u);
+        modal(`${P0(tt.id).nm} 파괴`, [{t:`금화 ${tt.price}닢을 내고 파괴`,v:1},{t:'취소',v:0}],
+          v=>{ if(v) applyAction(0,{k:'ab',ch:'warlord',t:tt}); });
+      }); break;
+    }
+    case 'marshal': {
+      const ts=r8Targets(0,'seize').filter(x=>x.price<=p.gold);
+      if(!ts.length){ toast('점령할 수 있는 건물이 없습니다'); return; }
+      targetCity('점령할 건물 (건설비 3 이하)', ts, x=>{
+        const tt=ts.find(y=>y.u===x.u);
+        modal(`${P0(tt.id).nm} 점령`, [{t:`금화 ${tt.price}닢을 주고 점령`,v:1},{t:'취소',v:0}],
+          v=>{ if(v) applyAction(0,{k:'ab',ch:'marshal',t:tt}); });
+      }); break;
+    }
+    case 'diplomat': {
+      const ts=r8Targets(0,'swap');
+      if(!ts.length||!p.city.length){ toast('교환할 건물이 없습니다'); return; }
+      targetCity('상대 도시에서 가져올 건물', ts, x=>{
+        const tt=ts.find(y=>y.u===x.u);
+        targetCity('내줄 내 건물', p.city.filter(c=>c.id!=='keep').map(c=>({pi:0,u:c.u,id:c.id})), m=>{
+          const payv=Math.max(0, tt.base-P0(m.id).cost)+tt.extra;
+          if(payv>p.gold){ toast(`금화 ${payv}닢이 필요합니다`); return; }
+          applyAction(0,{k:'ab',ch:'diplomat',t:tt,mine:m.u,pay:payv});
+        });
+      }); break;
+    }
+  }
+}
+
+function seerGive(pi,id){
+  const p=G.P[pi], o=G.P[opp(pi)];
+  p.hand.splice(p.hand.indexOf(id),1); o.hand.push(id);
+  say('예언자: 상대에게 카드 1장을 돌려줬습니다.');
+  refresh();
+  if(p.isAI && G.turn && !G.turn.ended) setTimeout(aiTurn,340);
+}
+function openSeerGive(pi){
+  const p=G.P[pi];
+  const row=el('div','hrow');
+  p.hand.forEach(id=>row.appendChild(cardNode(id,{mini:true,onclick:()=>{closeModal();seerGive(pi,id);}})));
+  modalRaw('상대에게 돌려줄 카드 1장', row, []);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   16. 기록 · 결과
+   ══════════════════════════════════════════════════════════════ */
+function renderLog(){
+  const b=$('#logbox'); if(!b) return;
+  b.innerHTML='';
+  G.log.slice(-260).forEach(e=>{
+    const n=el('div', e.rh?'rh':'le'); n.innerHTML=e.t; b.appendChild(n);
+  });
+  b.scrollTop=b.scrollHeight;
+}
+
+function showResult(){
+  const {a,b,winner}=G.result;
+  const box=el('div');
+  box.appendChild(el('div','big', winner===0?'승리!':winner===1?'패배…':'무승부'));
+  box.appendChild(el('div','center tiny muted',`${a.total} : ${b.total}`));
+  [[0,a],[1,b]].forEach(([pi,r])=>{
+    box.appendChild(el('div','sep'));
+    const h=el('div'); h.style.fontWeight='800'; h.style.color='var(--gold)';
+    h.textContent=`${G.P[pi].name} — ${r.total}점`; box.appendChild(h);
+    r.detail.forEach(([k,v])=>{
+      const row=el('div','scorerow');
+      row.appendChild(el('span',null,k)); row.appendChild(el('span','v',(v>=0?'+':'')+v));
+      box.appendChild(row);
+    });
+    const c=el('div','city'); G.P[pi].city.forEach(x=>c.appendChild(dchip(x.id,{}))); box.appendChild(c);
+  });
+  modalRaw('게임 결과', box, [{t:'새 게임', cls:'primary', fn:()=>location.reload()},{t:'닫기'}]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   17. 시작 화면
+   ══════════════════════════════════════════════════════════════ */
+const DEFAULT_CHARS = ['assassin','thief','magician','king','bishop','merchant','architect','warlord'];
+const STARTER14 = ['factory','smithy','library','thievesden','statue','dragongate','magicschool',
+                   'wishingwell','laboratory','keep','haunted','treasury','maproom','quarry'];
+
+const cfg = {
+  diff:'jieun',
+  chars: DEFAULT_CHARS.slice(),
+  uniqMode:'random14',      // 'random14' | 'starter14' | 'all30'
+};
+
+function buildStart(){
+  const s=$('#start'); s.innerHTML=''; s.classList.remove('off');
+  s.appendChild(el('h1','','시타델'));
+  s.appendChild(el('div','sub','1 : 1  ·  2인 전용'));
+
+  /* 난이도 */
+  const d1=el('div','sect'); d1.appendChild(el('h3',null,'상대 난이도'));
+  const dl=el('div','diffs');
+  DIFFS.forEach(d=>{
+    const b=el('button','diff'+(cfg.diff===d.id?' sel':''));
+    b.appendChild(el('div','em',d.em));
+    const c=el('div');
+    c.appendChild(el('div','t',`${d.nm}  ·  ${d.tier}`));
+    c.appendChild(el('div','d',d.desc));
+    b.appendChild(c);
+    b.onclick=()=>{ cfg.diff=d.id; buildStart(); };
+    dl.appendChild(b);
+  });
+  d1.appendChild(dl); s.appendChild(d1);
+
+  /* 캐릭터 선택 */
+  const d2=el('div','sect');
+  const h=el('h3',null,'캐릭터 구성 (순번 1~8)'); d2.appendChild(h);
+  for(let r=1;r<=8;r++){
+    const row=el('div','rankrow');
+    row.appendChild(el('div','rn',String(r)));
+    const vs=el('div','vsel');
+    CHARS.filter(c=>c.rank===r).forEach(c=>{
+      const cur = cfg.chars.find(x=>CH[x].rank===r);
+      const o=el('button','vopt'+(cur===c.id?' sel':'')+(c.no2p?' dis':''), c.nm);
+      o.onclick=()=>{ cfg.chars=cfg.chars.filter(x=>CH[x].rank!==r); cfg.chars.push(c.id); buildStart(); };
+      vs.appendChild(o);
+    });
+    row.appendChild(vs); d2.appendChild(row);
+  }
+  const rowb=el('div','row'); rowb.style.marginTop='8px';
+  rowb.appendChild(mk('기본 8인','ghost sm grow',()=>{cfg.chars=DEFAULT_CHARS.slice();buildStart();}));
+  rowb.appendChild(mk('무작위','ghost sm grow',()=>{
+    cfg.chars=[]; for(let r=1;r<=8;r++) cfg.chars.push(pick(CHARS.filter(c=>c.rank===r&&!c.no2p)).id);
+    buildStart();
+  }));
+  d2.appendChild(rowb);
+  d2.appendChild(el('div','tiny muted','※ 2인 게임에서 황제는 사용할 수 없습니다 (규칙서 7p)'));
+  s.appendChild(d2);
+
+  /* 특수 건물 */
+  const d3=el('div','sect'); d3.appendChild(el('h3',null,'특수 건물'));
+  const modes=[
+    ['random14','무작위 14종','30종 중 14종을 매 게임 무작위로'],
+    ['starter14','입문 14종','규칙서 3p 첫 게임 목록'],
+    ['all30','30종 전부','기본 54장 + 특수 30장 = 84장'],
+  ];
+  const ml=el('div','diffs');
+  modes.forEach(([id,t,dd])=>{
+    const b=el('button','diff'+(cfg.uniqMode===id?' sel':''));
+    const c=el('div'); c.appendChild(el('div','t',t)); c.appendChild(el('div','d',dd));
+    b.appendChild(c); b.onclick=()=>{cfg.uniqMode=id;buildStart();};
+    ml.appendChild(b);
+  });
+  d3.appendChild(ml); s.appendChild(d3);
+
+  const go=el('button','btn primary wide','게임 시작');
+  go.style.padding='14px'; go.style.fontSize='16px';
+  go.onclick=()=>{
+    if(cfg.chars.length!==8){ toast('순번 1~8을 모두 골라주세요'); return; }
+    if(cfg.chars.includes('emperor')){ toast('2인 게임에서 황제는 쓸 수 없습니다'); return; }
+    s.classList.add('off');
+    startGame(cfg.diff, cfg.chars, chooseUniques());
+  };
+  s.appendChild(go);
+  s.appendChild(el('div','tiny muted center','8번째 건물이 지어지면 그 라운드 끝에 게임이 종료됩니다.'));
+}
+function mk(t,cls,fn){ const b=el('button','btn '+cls,t); b.onclick=fn; return b; }
+
+function chooseUniques(){
+  const all=UNIQUE.map(u=>u.id);
+  if(cfg.uniqMode==='all30') return all;
+  if(cfg.uniqMode==='starter14') return STARTER14.slice();
+  return shuffle(all.slice()).slice(0,14);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   18. 초기화
+   ══════════════════════════════════════════════════════════════ */
+$('#btnLog').onclick=()=>{ renderLog(); $('#logwrap').classList.add('on'); };
+$('#btnLogClose').onclick=()=>$('#logwrap').classList.remove('on');
+$('#btnMenu').onclick=()=>{
+  modal('메뉴',[
+    {t:'규칙 요약', v:'rules'},
+    {t:'캐릭터 능력 보기', v:'chars'},
+    {t:'새 게임', v:'new'},
+  ], v=>{
+    if(v==='new'){ if(confirm('새 게임을 시작할까요?')) location.reload(); }
+    if(v==='rules') showRules();
+    if(v==='chars') showChars();
+  });
+};
+$('#modal').onclick=e=>{ if(e.target.id==='modal') closeModal(); };
+
+function showRules(){
+  const b=el('div'); b.style.fontSize='12.5px'; b.style.lineHeight='1.65';
+  b.innerHTML = `
+  <b style="color:var(--gold)">2인 게임 규칙 (규칙서 7p)</b><br>
+  · 순번 1~8 캐릭터를 사용합니다. <b>황제는 사용 불가</b>.<br>
+  · 캐릭터 8장 중 1장을 무작위로 뒷면으로 버립니다.<br>
+  · 왕관 주인이 7장을 보고 1장을 가진 뒤 나머지를 상대에게 넘깁니다.<br>
+  · 이후 서로 <b>2장을 골라 1장은 갖고 1장은 뒷면으로 버리기</b>를 반복 → 각자 캐릭터 2명.<br>
+  · 각자 매 라운드 차례를 2번(캐릭터마다 1번) 진행합니다. 도시·금고는 하나만 운용합니다.<br>
+  · 능력은 <b>해당 캐릭터의 차례에만</b> 발휘됩니다.<br>
+  · <b>8번째 건물</b>이 건설되면 도시 완성, 그 라운드가 끝나면 게임 종료.<br><br>
+  <b style="color:var(--gold)">차례</b><br>
+  1) 자원 수집 (필수) — 금화 2닢 <i>또는</i> 카드 2장 중 1장 보유<br>
+  2) 건설 (선택) — 기본 1채<br>
+  *) 캐릭터 능력 — 차례 중 한 번<br><br>
+  <b style="color:var(--gold)">점수</b><br>
+  · 건설비용 합계<br>
+  · 5종류(귀족·종교·상업·군사·특수) 전부 건설 시 +3<br>
+  · 가장 먼저 도시 완성 +4 / 그 외 완성 +2<br>
+  · 특수 건물 추가 점수`;
+  modalRaw('규칙 요약', b, [{t:'닫기'}]);
+}
+function showChars(){
+  const b=el('div');
+  const list = G? G.chars : cfg.chars;
+  list.slice().sort((x,y)=>CH[x].rank-CH[y].rank).forEach(id=>{
+    const r=el('div'); r.style.padding='7px 0'; r.style.borderBottom='1px solid #ffffff12';
+    const h=el('div'); h.style.fontWeight='800'; h.style.color='var(--gold)';
+    h.textContent=`${CH[id].rank}. ${CH[id].nm}`;
+    r.appendChild(h);
+    const d=el('div','tiny muted',CH[id].ab); r.appendChild(d);
+    b.appendChild(r);
+  });
+  modalRaw('이번 게임의 캐릭터', b, [{t:'닫기'}]);
+}
+
+buildStart();
+</script>
+</body>
+</html>
