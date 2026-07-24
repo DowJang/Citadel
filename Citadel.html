@@ -57,20 +57,20 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* ============ 상단바 ============ */
 #topbar{
   flex:0 0 auto;background:linear-gradient(#241c16,#1c1512);border-bottom:1px solid var(--line);
-  padding:6px 10px; display:flex;align-items:center;gap:8px;
+  padding:3px 8px; display:flex;align-items:center;gap:6px;min-height:26px;
 }
-#topbar .rnd{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.5px}
-#topbar .ttl{font-weight:800;color:var(--gold);letter-spacing:1px}
-.iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--dim)}
+#topbar .rnd{font-size:10.5px;color:var(--dim);font-weight:700;letter-spacing:.5px}
+#topbar .ttl{font-weight:800;color:var(--gold);letter-spacing:1px;font-size:12px}
+.iconbtn{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--dim)}
 
 /* ============ 본문 ============ */
-#main{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px 4px}
+#main{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:6px 8px 4px;display:flex;flex-direction:column;justify-content:center;gap:6px}
 #main::-webkit-scrollbar{width:0}
 
-.seat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin-bottom:8px}
-.seat.me{border-color:#5d4a33}
+.seat{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:9px 10px;flex:0 0 auto}
+.seat.me{border-color:#5d4a33;background:linear-gradient(#241c15,#1d1712)}
 .seat .hd{display:flex;align-items:center;gap:7px;font-size:12.5px}
-.seat .nm{font-weight:800;font-size:13.5px}
+.seat .nm{font-weight:800;font-size:14px}
 .seat .stats{margin-left:auto;display:flex;gap:9px;align-items:center;font-size:12.5px}
 .crown{color:var(--gold);font-size:14px}
 .chartag{
@@ -80,22 +80,32 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .chartag.act{background:linear-gradient(#8a6b2d,#634c1f);color:#fff2d5;border-color:var(--gold2)}
 .chartag.dead{text-decoration:line-through;opacity:.5}
 
-/* 도시 */
-.city{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:24px}
-.city:empty::after{content:"— 건물 없음 —";color:var(--dim2);font-size:11px}
+/* 도시 : 상대/나의 건설 현황을 미니 카드로 표시 */
+.city{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;min-height:60px;align-items:flex-start}
+.city:empty::after{content:"— 건물 없음 —";color:var(--dim2);font-size:11px;padding-top:20px}
 .dchip{
-  font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;
-  border:1px solid rgba(255,255,255,.14); color:#fff; display:flex;align-items:center;gap:4px;
-  max-width:100%;
+  flex:0 0 auto;width:46px;height:64px;border-radius:6px;position:relative;overflow:hidden;
+  border:1px solid rgba(0,0,0,.55); box-shadow:0 2px 4px #0007; cursor:default;
 }
-.dchip .c{opacity:.85;font-weight:800}
+.dchip .art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:19px;filter:drop-shadow(0 1px 1px #0007)}
+.dchip .c{
+  position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f6dd9a,#b78b28);color:#3a2a08;
+  font-weight:900;font-size:8.5px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px #00000055; z-index:2;
+}
+.dchip .rb{
+  position:absolute;left:2px;right:2px;bottom:2px;background:linear-gradient(#f3e6c4,#d9c493);
+  color:#3a2a12;border-radius:3px;padding:1.5px 2px;font-size:7px;font-weight:800;
+  text-align:center;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;
+}
 .dchip.sel{outline:2px solid var(--gold);outline-offset:1px}
 .dchip.dis{opacity:.35}
-.t-noble{background:linear-gradient(#9c7d1f,#6f5814)}
-.t-relig{background:linear-gradient(#2a5f96,#1d4369)}
-.t-trade{background:linear-gradient(#2f7a45,#215732)}
-.t-milit{background:linear-gradient(#953230,#6b2422)}
-.t-uniq{background:linear-gradient(#6d3d8c,#4d2a63)}
+.t-noble .art{background:linear-gradient(#c9a53c,#7a5f16)}
+.t-relig .art{background:linear-gradient(#4d84c4,#1d4369)}
+.t-trade .art{background:linear-gradient(#4fae6a,#215732)}
+.t-milit .art{background:linear-gradient(#c25a54,#6b2422)}
+.t-uniq  .art{background:linear-gradient(#9860c2,#4d2a63)}
 
 /* 액션 패널 */
 #panel{
@@ -107,35 +117,48 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 #acts{display:flex;flex-wrap:wrap;gap:7px}
 
-/* 손패 */
-#handWrap{margin-top:7px}
-#hand{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+/* 손패 : 세로 공간을 아끼기 위해 카드 크기를 줄임 */
+#handWrap{margin-top:4px}
+#hand{display:flex;gap:5px;overflow-x:auto;padding:2px 0 4px;-webkit-overflow-scrolling:touch}
 #hand::-webkit-scrollbar{height:0}
 
 /* ============ 카드 ============ */
 .card{
-  flex:0 0 auto;width:98px;height:132px;border-radius:9px;position:relative;
-  border:1px solid rgba(0,0,0,.5); padding:6px; display:flex;flex-direction:column;
+  flex:0 0 auto;width:72px;height:100px;border-radius:8px;position:relative;
+  border:1px solid rgba(0,0,0,.5); display:flex;flex-direction:column;
   box-shadow:0 2px 6px #0007; overflow:hidden; color:#fff;
 }
+.card .art{position:absolute;inset:0;top:0;height:60%;display:flex;align-items:center;justify-content:center;font-size:22px;filter:drop-shadow(0 1px 1px #0007)}
 .card .cost{
-  position:absolute;top:5px;left:5px;width:19px;height:19px;border-radius:50%;
+  position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#f6dd9a,#b78b28);color:#3a2a08;
-  font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 1px #00000055;
+  font-weight:900;font-size:10px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px #00000055; z-index:2;
 }
-.card .nm{margin-top:21px;font-size:12.5px;font-weight:800;line-height:1.15;text-shadow:0 1px 2px #0009}
-.card .tp{font-size:9.5px;opacity:.75;margin-top:2px;font-weight:700;letter-spacing:.5px}
-.card .tx{
-  margin-top:auto;font-size:9px;line-height:1.25;background:#00000055;border-radius:5px;
-  padding:3px 4px;max-height:62px;overflow:hidden;font-weight:500;
+.card .nm{
+  position:absolute;left:3px;right:3px;bottom:3px;background:linear-gradient(#f3e6c4,#d9c493);
+  color:#3a2a12;border-radius:4px;padding:3px 3px 2px;font-size:9.5px;font-weight:800;line-height:1.1;
+  text-align:center;z-index:2;
 }
+.card .tp{display:none}
+.card .tx{display:none}
 .card.sel{outline:2.5px solid var(--gold);outline-offset:1px;transform:translateY(-4px)}
 .card.dis{filter:grayscale(.7) brightness(.55)}
-.card.mini{width:78px;height:104px}
-.card.mini .nm{font-size:11px;margin-top:19px}
-.card.mini .tx{font-size:8px;max-height:42px}
-.card .badge{position:absolute;top:5px;right:5px;font-size:9px;font-weight:800;background:#0009;border-radius:5px;padding:2px 4px}
+.card.mini{width:60px;height:84px}
+.card.mini .art{font-size:18px}
+.card.mini .nm{font-size:8px}
+.card .badge{position:absolute;top:4px;right:4px;font-size:8.5px;font-weight:800;background:#0009;border-radius:5px;padding:1.5px 3px;z-index:3}
+
+/* 카드 상세(모달)에서만 설명 텍스트를 보여준다 */
+.card.detail{width:170px;height:230px}
+.card.detail .art{font-size:44px}
+.card.detail .cost{width:26px;height:26px;font-size:14px}
+.card.detail .nm{font-size:14px;padding:6px 5px}
+.card.detail .tp{display:block;position:absolute;left:6px;top:6px;font-size:9px;opacity:0;width:0}
+.card.detail .tx{
+  display:block;position:absolute;left:4px;right:4px;bottom:44px;font-size:10.5px;line-height:1.3;
+  background:#000000a0;border-radius:6px;padding:5px 6px;max-height:120px;overflow:auto;font-weight:500;z-index:2;
+}
 
 /* 캐릭터 카드 */
 .chcard{
@@ -152,6 +175,10 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .chcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px #e8c66a55;transform:translateY(-3px)}
 .chcard.dis{opacity:.4}
 .chcard .hd{display:flex;align-items:center;gap:6px}
+.chcard .cart{
+  width:100%;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;background:linear-gradient(#544329,#362a1c);border:1px solid #00000055;margin-top:2px;
+}
 
 /* ============ 모달 ============ */
 #modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:50;backdrop-filter:blur(2px)}
@@ -367,6 +394,22 @@ const PROTO = {};
 BASIC.forEach(b=>PROTO[b.id]={id:b.id,nm:b.nm,type:b.type,cost:b.cost,tx:''});
 UNIQUE.forEach(u=>PROTO[u.id]={id:u.id,nm:u.nm,type:'uniq',cost:u.cost,tx:u.tx});
 
+/* ── 카드 아트(간이) : 실제 일러스트 대신 종류별/건물별 아이콘으로 박스 카드의 느낌만 재현 ── */
+const ART = {
+  temple:'⛪',church:'🔔',monastery:'📿',cathedral:'⛪',
+  watchtower:'🗼',prison:'⛓️',battlefield:'⚔️',fortress:'🏯',
+  tavern:'🍺',market:'🛒',tradingpost:'📦',docks:'⚓',harbor:'🚢',townhall:'🏛️',
+  manor:'🏠',castle:'🏰',palace:'👑',
+  secretvault:'🔐',haunted:'👻',stables:'🐎',framework:'🧱',statue:'🗿',
+  keep:'🛡️',armory:'⚔️',basilica:'⛪',museum:'🖼️',monument:'🗽',
+  poorhouse:'🏚️',observatory:'🔭',quarry:'⛏️',treasury:'💰',capitol:'🏛️',
+  ivorytower:'🗼',factory:'🏭',laboratory:'🧪',wishingwell:'⛲',smithy:'🔨',
+  graveyard:'⚰️',maproom:'🗺️',magicschool:'🧙',theater:'🎭',dragongate:'🐉',
+  greatwall:'🧱',library:'📚',thievesden:'🗡️',park:'🌳',goldmine:'⛏️',
+};
+const TYPE_ART = {noble:'👑',relig:'⛪',trade:'💰',milit:'⚔️',uniq:'🔮'};
+function artOf(id){ return ART[id] || TYPE_ART[P0(id).type] || '❔'; }
+
 /* ── AI 난이도 4단계 ── */
 const DIFFS = [
   {id:'rookie', nm:'애송이',   tier:'중급',   em:'🐣',
@@ -395,6 +438,34 @@ const sum = (a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const P0 = id=>PROTO[id];
 const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ── 간단 효과음 (합성음, 외부 파일 불필요) ── */
+const SFX = (()=>{
+  let ctx=null;
+  function ac(){
+    if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+  function tone(freq,dur,type,vol,delay){
+    try{
+      const c=ac(), t0=c.currentTime+(delay||0);
+      const o=c.createOscillator(), g=c.createGain();
+      o.type=type||'sine'; o.frequency.setValueAtTime(freq,t0);
+      g.gain.setValueAtTime(0,t0);
+      g.gain.linearRampToValueAtTime(vol||0.18,t0+0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0); o.stop(t0+dur+0.03);
+    }catch(e){}
+  }
+  return {
+    coin(){ tone(1500,.08,'triangle',.16); tone(1950,.11,'triangle',.11,.055); },
+    draw(){ tone(520,.07,'sine',.14); tone(760,.09,'sine',.11,.06); },
+    build(){ tone(150,.13,'square',.16); tone(115,.18,'square',.12,.05); },
+    ability(){ tone(680,.05,'sawtooth',.11); tone(980,.06,'sawtooth',.09,.045); tone(1320,.09,'sawtooth',.07,.09); },
+  };
+})();
 
 /* ══════════════════════════════════════════════════════════════
    3. 게임 상태
@@ -611,6 +682,7 @@ function gatherGold(){
   const t=G.turn,p=G.P[t.pi];
   let n=2; if(hasB(p,'goldmine')) n+=1;
   p.gold+=n; t.gathered=true;
+  SFX.coin();
   say(`자원 수집: 금화 ${n}닢.`);
   afterGather();
 }
@@ -618,6 +690,7 @@ function gatherCardsStart(){
   const t=G.turn,p=G.P[t.pi];
   const n = hasB(p,'observatory')?3:2;
   const cards = drawN(n);
+  SFX.draw();
   if(hasB(p,'library')){
     p.hand.push(...cards); t.gathered=true;
     say(`자원 수집: 도서관 — 카드 ${cards.length}장을 전부 손에 듭니다.`);
@@ -733,6 +806,7 @@ function canBuild(pi,id,opts){
 function doBuild(pi,id,payCards,opts){
   opts=opts||{};
   const p=G.P[pi], t=G.turn;
+  SFX.build();
   let cost = bcost(p,id);
   if(opts.free){ cost=0; }
   payCards = payCards||0;
@@ -1054,6 +1128,7 @@ function applyAction(pi, a, extra){
 function doAbility(pi,a,extra){
   const t=G.turn, p=G.P[pi], o=G.P[opp(pi)];
   t.abilityDone=true;
+  SFX.ability();
   switch(a.ch){
     case 'assassin': {
       const st=charState(a.target);
@@ -1739,22 +1814,30 @@ function modal(title, opts, cb, footBtns){
 function cardNode(id, opts){
   opts=opts||{};
   const pr=P0(id);
-  const c=el('div','card '+TYPE[pr.type].cls+(opts.mini?' mini':'')+(opts.sel?' sel':'')+(opts.dis?' dis':''));
+  const c=el('div','card '+TYPE[pr.type].cls+(opts.mini?' mini':'')+(opts.detail?' detail':'')+(opts.sel?' sel':'')+(opts.dis?' dis':''));
+  c.appendChild(el('div','art',artOf(id)));
   if(pr.cost>0||pr.type!=='uniq') c.appendChild(el('div','cost',String(pr.cost)));
   else c.appendChild(el('div','cost','–'));
+  if(pr.tx) c.appendChild(el('div','tx',pr.tx));
   c.appendChild(el('div','nm',pr.nm));
   c.appendChild(el('div','tp',TYPE[pr.type].nm));
-  if(pr.tx) c.appendChild(el('div','tx',pr.tx));
   if(opts.badge) c.appendChild(el('div','badge',opts.badge));
   if(opts.onclick) c.onclick=opts.onclick;
   return c;
 }
+const CHAR_ART = {
+  assassin:'🗡️',witch:'🧹',magistrate:'⚖️',thief:'🥷',blackmailer:'📜',spy:'🕵️',
+  magician:'🎩',wizard:'🪄',seer:'🔮',king:'👑',emperor:'👑',archduke:'👑',
+  bishop:'⛪',cardinal:'⛪',abbot:'⛪',merchant:'💰',alchemist:'⚗️',trader:'💰',
+  architect:'📐',navigator:'⛵',scholar:'📖',warlord:'⚔️',marshal:'⚔️',diplomat:'🤝',
+};
 function charNode(cid, opts){
   opts=opts||{};
   const ch=CH[cid];
   const c=el('div','chcard'+(opts.sel?' sel':'')+(opts.dis?' dis':''));
   const hd=el('div','hd'); hd.appendChild(el('div','rk',String(ch.rank)));
   hd.appendChild(el('div','nm',ch.nm)); c.appendChild(hd);
+  c.appendChild(el('div','cart',CHAR_ART[cid]||'❔'));
   c.appendChild(el('div','ab',ch.ab));
   if(opts.onclick) c.onclick=opts.onclick;
   return c;
@@ -1763,8 +1846,9 @@ function dchip(cid, opts){
   opts=opts||{};
   const pr=P0(cid);
   const d=el('div','dchip '+TYPE[pr.type].cls+(opts.sel?' sel':'')+(opts.dis?' dis':''));
-  d.appendChild(el('span','c',String(pr.cost)));
-  d.appendChild(el('span',null,pr.nm));
+  d.appendChild(el('div','art',artOf(cid)));
+  d.appendChild(el('div','c',String(pr.cost)));
+  d.appendChild(el('div','rb',pr.nm));
   if(opts.onclick) d.onclick=opts.onclick;
   return d;
 }
@@ -1938,7 +2022,7 @@ function renderHand(){
 
 function showCardInfo(id, why){
   const pr=P0(id);
-  const box=el('div'); box.appendChild(cardNode(id,{}));
+  const box=el('div'); box.appendChild(cardNode(id,{detail:true}));
   box.style.display='flex'; box.style.justifyContent='center';
   modalRaw(pr.nm, box, [{t:'닫기'}]);
   if(why) $('#mbody').appendChild(el('div','tiny muted center',why));
