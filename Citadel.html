@@ -907,10 +907,13 @@ function typeIncome(p,cid){
   const n = nType(p,t);
   if(cid==='archduke'||cid==='cardinal'){
     if(n>0){ p.hand.push(...drawN(n)); say(`${CH[cid].nm}: ${TYPE[t].nm} 건물 ${n}채 → 카드 ${n}장.`); }
+    else say(`${CH[cid].nm}: ${TYPE[t].nm} 건물이 없어 추가 카드가 없습니다.`);
   } else if(cid==='abbot'){
     if(n>0){ p.gold+=n; say(`수도원장: 종교 건물 ${n}채 → 금화 ${n}닢.`); }
+    else say('수도원장: 종교 건물이 없어 추가 금화가 없습니다.');
   } else {
     if(n>0){ p.gold+=n; say(`${CH[cid].nm}: ${TYPE[t].nm} 건물 ${n}채 → 금화 ${n}닢.`); }
+    else say(`${CH[cid].nm}: ${TYPE[t].nm} 건물이 없어 추가 금화가 없습니다.`);
   }
 }
 
