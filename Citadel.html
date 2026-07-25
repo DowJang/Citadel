@@ -1978,7 +1978,7 @@ function draftNode(){
   hd.appendChild(el('span','nm', mine? t : `${G.P[1].name} 선택 중…`));
   box.appendChild(hd);
   const row=el('div','hrow');
-  d.pool.forEach(cid=>{
+  d.pool.slice().sort((a,b)=>CH[a].rank-CH[b].rank).forEach(cid=>{
     row.appendChild(charNode(cid,{
       onclick: mine? ()=>{ d.sub==='discard'? draftPickDiscard(cid) : draftPickKeep(cid); } : null,
       dis: !mine
