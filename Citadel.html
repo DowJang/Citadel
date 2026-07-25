@@ -246,6 +246,17 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   animation:tin .2s ease-out; max-width:90%;text-align:center;
 }
 @keyframes tin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+
+.centerpop{
+  position:fixed;left:50%;top:36%;transform:translate(-50%,-50%);
+  background:linear-gradient(#3a2c1c,#241a12);border:1px solid var(--gold2);
+  border-radius:14px;padding:12px 20px;font-size:13.5px;font-weight:700;color:var(--txt);
+  z-index:90;text-align:center;max-width:82%;box-shadow:0 10px 34px #000b;
+  pointer-events:none; animation:popin .16s ease-out;
+}
+.centerpop.out{animation:popout .18s ease-in forwards}
+@keyframes popin{from{opacity:0;transform:translate(-50%,-50%) scale(.86)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes popout{to{opacity:0;transform:translate(-50%,-50%) scale(.92)}}
 </style>
 </head>
 <body>
@@ -255,6 +266,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
     <span class="ttl">시타델</span>
     <span class="rnd" id="rndLbl"></span>
     <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="iconbtn" id="btnChars" title="캐릭터 참조">👥</button>
       <button class="iconbtn" id="btnLog">≡</button>
       <button class="iconbtn" id="btnMenu">⚙</button>
     </div>
@@ -658,15 +670,22 @@ function startTurn(pi, cid){
     p.gold=0;
   }
   // 즉시 보너스
-  immediateBonus(pi,cid);
+  const bonusMsg = immediateBonus(pi,cid);
   refresh();
-  if(p.isAI) setTimeout(aiTurn, 420);
+  if(p.isAI){
+    centerPopup(`<b>${CH[cid].nm}</b> 호명 — ${p.name}`);
+    if(bonusMsg) setTimeout(()=>centerPopup(bonusMsg), 500);
+    setTimeout(aiTurn, 1000);
+  } else if(bonusMsg){
+    toast(bonusMsg.replace(/<[^>]+>/g,''));
+  }
 }
 
 function immediateBonus(pi,cid){
   const p=G.P[pi];
-  if(cid==='merchant'){ p.gold+=1; say('상인: 추가 금화 1닢.'); }
-  if(cid==='architect'){ const c=drawN(2); p.hand.push(...c); say('건축가: 카드 2장을 받습니다.'); }
+  if(cid==='merchant'){ p.gold+=1; const m='상인: 추가 금화 1닢.'; say(m); return m; }
+  if(cid==='architect'){ const c=drawN(2); p.hand.push(...c); const m='건축가: 카드 2장을 받습니다.'; say(m); return m; }
+  return null;
 }
 
 function buildLimit(){
@@ -716,7 +735,7 @@ function afterGather(){
   // 마녀가 이 캐릭터에게 마법을 걸었다면 → 마녀가 남은 차례를 가로챈다
   if(st.bewitched){ hijackByWitch(); return; }
   refresh();
-  if(p.isAI) setTimeout(aiTurn, 380);
+  if(p.isAI) aiStep(aiTurn);
 }
 
 /* ── 협박범 ── */
@@ -753,7 +772,7 @@ function finishBlackmail(pay){
   st.blackmail=null;
   if(st.bewitched){ hijackByWitch(); return; }
   refresh();
-  if(p.isAI) setTimeout(aiTurn,380);
+  if(p.isAI) aiStep(aiTurn);
 }
 
 /* ── 마녀 ── */
@@ -770,7 +789,7 @@ function hijackByWitch(){
     abilityDone:false, freeBuild:0, hijack:victimChar,
   };
   refresh();
-  if(G.P[wi].isAI) setTimeout(aiTurn,420);
+  if(G.P[wi].isAI) aiStep(aiTurn);
 }
 
 /* ── 건설 ── */
@@ -864,11 +883,17 @@ function endTurn(){
   t.ended=true;
   const p=G.P[t.pi];
   const cid = t.hijack||t.cid;
+  const logBefore = G.log.length;
   // 건물 종류별 수입 (차례 마지막에 정산 — 항상 최선)
   typeIncome(p,cid);
   if(cid==='alchemist' && t.spent>0){ p.gold+=t.spent; say(`연금술사: 지불한 금화 ${t.spent}닢을 돌려받습니다.`); }
   if(hasB(p,'poorhouse') && p.gold===0){ p.gold+=1; say('구빈원: 금화 1닢.'); }
   if(hasB(p,'park') && p.hand.length===0){ p.hand.push(...drawN(2)); say('공원: 카드 2장.'); }
+  const income = G.log.slice(logBefore).filter(e=>!e.rh);
+  if(income.length){
+    if(p.isAI) income.forEach(e=>centerPopup(e.t));
+    else toast(income.map(e=>e.t.replace(/<[^>]+>/g,'')).join(' · '));
+  }
   G.turn=null;
   refresh();
   setTimeout(nextRank, 260);
@@ -1122,7 +1147,7 @@ function applyAction(pi, a, extra){
     case 'end': endTurn(); return;
   }
   refresh();
-  if(p.isAI && G.turn && !G.turn.ended) setTimeout(aiTurn, 340);
+  if(p.isAI && G.turn && !G.turn.ended) aiStep(aiTurn);
 }
 
 function doAbility(pi,a,extra){
@@ -1787,7 +1812,29 @@ function toast(msg,ms){
   const n=el('div','toast',msg); document.body.appendChild(n);
   setTimeout(()=>n.remove(), ms||2400);
 }
-function closeModal(){ $('#modal').classList.remove('on'); }
+
+/* 화면 중앙 팝업 — 상대(AI)의 행동을 하나씩 보여줄 때 사용 */
+function centerPopup(html,ms){
+  const n=document.createElement('div'); n.className='centerpop'; n.innerHTML=html;
+  document.body.appendChild(n);
+  setTimeout(()=>{ n.classList.add('out'); setTimeout(()=>n.remove(),200); }, ms||780);
+}
+/* 마지막 로그 문구를 상대 행동 팝업으로 띄우고, 1초 뒤 다음 행동을 진행한다 */
+function aiStep(fn){
+  const last=G.log[G.log.length-1];
+  if(last && !last.rh) centerPopup(last.t);
+  setTimeout(fn, 1000);
+}
+
+let pendingDraw = null;   // 자원수집(카드) 중 선택 대기 중인 카드들 — 취소 시 되돌리기 위함
+function closeModal(){
+  $('#modal').classList.remove('on');
+  if(pendingDraw){
+    const c=pendingDraw; pendingDraw=null;
+    c.slice().reverse().forEach(bottom);
+    refresh();
+  }
+}
 function modalRaw(title, bodyNode, footBtns){
   $('#mtitle').textContent=title;
   const b=$('#mbody'); b.innerHTML=''; if(bodyNode) b.appendChild(bodyNode);
@@ -1903,6 +1950,8 @@ function seatNode(pi){
       const ok=uiTargeting.list.some(x=>x.pi===pi&&x.u===c.u);
       if(ok) o.onclick=()=>{ if(uiTargeting && uiTargeting.kind==='city') uiTargeting.pick({pi,u:c.u,id:c.id}); };
       else o.dis=true;
+    } else {
+      o.onclick=()=>showBuildingInfo(c.id);
     }
     city.appendChild(dchip(c.id,o));
   });
@@ -2028,15 +2077,30 @@ function showCardInfo(id, why){
   if(why) $('#mbody').appendChild(el('div','tiny muted center',why));
 }
 
+/* 이미 지어진 건물을 눌렀을 때 특수 능력을 보여준다 */
+function showBuildingInfo(id){
+  const pr=P0(id);
+  const box=el('div'); box.appendChild(cardNode(id,{detail:true}));
+  box.style.display='flex'; box.style.justifyContent='center';
+  modalRaw(pr.nm, box, [{t:'닫기'}]);
+  if(!pr.tx) $('#mbody').appendChild(el('div','tiny muted center', `${TYPE[pr.type].nm} 건물 · 건설비용 ${pr.cost}닢`));
+}
+
+/* 건설 전 카드 설명(효과)을 먼저 보여주고 나서 건설 여부를 확정한다 */
 function confirmBuild(id){
   const p=G.P[0]; const cost=bcost(p,id);
   let cards=0;
   if(id==='thievesden' && p.gold<cost) cards=Math.min(cost-p.gold, p.hand.length-1);
   const info = cards? `금화 ${cost-cards}닢 + 카드 ${cards}장` : `금화 ${cost}닢`;
-  modal(`${P0(id).nm} 건설`, [
-    {t:'건설한다', s:info, v:1},
-    {t:'취소', s:'', v:0},
-  ], v=>{ if(v) applyAction(0,{k:'build',id,cards}); });
+  const wrap=el('div');
+  const box=el('div'); box.appendChild(cardNode(id,{detail:true}));
+  box.style.display='flex'; box.style.justifyContent='center'; box.style.marginBottom='8px';
+  wrap.appendChild(box);
+  wrap.appendChild(el('div','center tiny muted',`건설 비용: ${info}`));
+  modalRaw(`${P0(id).nm} 건설하시겠습니까?`, wrap, [
+    {t:'건설한다', cls:'primary', fn:()=>applyAction(0,{k:'build',id,cards})},
+    {t:'취소'},
+  ]);
 }
 
 function pickHandCard(title, cb, filter){
@@ -2051,9 +2115,12 @@ function pickHandCard(title, cb, filter){
 }
 
 function chooseDrawUI(cards){
+  pendingDraw = cards;
   const row=el('div','hrow');
-  cards.forEach(id=>row.appendChild(cardNode(id,{onclick:()=>{closeModal();gatherCardsPick(cards,id);}})));
-  modalRaw(`카드 ${cards.length}장 중 1장을 보유`, row, []);
+  cards.forEach(id=>row.appendChild(cardNode(id,{onclick:()=>{
+    pendingDraw=null; closeModal(); gatherCardsPick(cards,id);
+  }})));
+  modalRaw(`카드 ${cards.length}장 중 1장을 보유 (필수 선택)`, row, []);
 }
 
 function targetCity(msg, list, cb){
@@ -2213,7 +2280,7 @@ function seerGive(pi,id){
   p.hand.splice(p.hand.indexOf(id),1); o.hand.push(id);
   say('예언자: 상대에게 카드 1장을 돌려줬습니다.');
   refresh();
-  if(p.isAI && G.turn && !G.turn.ended) setTimeout(aiTurn,340);
+  if(p.isAI && G.turn && !G.turn.ended) aiStep(aiTurn);
 }
 function openSeerGive(pi){
   const p=G.P[pi];
@@ -2350,6 +2417,7 @@ function chooseUniques(){
 /* ══════════════════════════════════════════════════════════════
    18. 초기화
    ══════════════════════════════════════════════════════════════ */
+$('#btnChars').onclick=()=>showChars();
 $('#btnLog').onclick=()=>{ renderLog(); $('#logwrap').classList.add('on'); };
 $('#btnLogClose').onclick=()=>$('#logwrap').classList.remove('on');
 $('#btnMenu').onclick=()=>{
