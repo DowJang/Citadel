@@ -670,14 +670,19 @@ function startTurn(pi, cid){
     p.gold=0;
   }
   // 즉시 보너스
+  const logBefore = G.log.length;
   const bonusMsg = immediateBonus(pi,cid);
+  // 건물 종류별 수입 (직업 호명 = 차례 시작과 동시에 패시브로 지급)
+  typeIncome(p,cid);
+  const msgs = G.log.slice(logBefore).filter(e=>!e.rh).map(e=>e.t);
   refresh();
   if(p.isAI){
     centerPopup(`<b>${CH[cid].nm}</b> 호명 — ${p.name}`);
-    if(bonusMsg) setTimeout(()=>centerPopup(bonusMsg), 500);
-    setTimeout(aiTurn, 1000);
-  } else if(bonusMsg){
-    toast(bonusMsg.replace(/<[^>]+>/g,''));
+    let delay=500;
+    msgs.forEach(m=>{ setTimeout(()=>centerPopup(m), delay); delay+=500; });
+    setTimeout(aiTurn, delay+500);
+  } else if(msgs.length){
+    toast(msgs.map(m=>m.replace(/<[^>]+>/g,'')).join(' · '));
   }
 }
 
@@ -884,8 +889,6 @@ function endTurn(){
   const p=G.P[t.pi];
   const cid = t.hijack||t.cid;
   const logBefore = G.log.length;
-  // 건물 종류별 수입 (차례 마지막에 정산 — 항상 최선)
-  typeIncome(p,cid);
   if(cid==='alchemist' && t.spent>0){ p.gold+=t.spent; say(`연금술사: 지불한 금화 ${t.spent}닢을 돌려받습니다.`); }
   if(hasB(p,'poorhouse') && p.gold===0){ p.gold+=1; say('구빈원: 금화 1닢.'); }
   if(hasB(p,'park') && p.hand.length===0){ p.hand.push(...drawN(2)); say('공원: 카드 2장.'); }
